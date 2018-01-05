@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>记一次失败的分享 | ChongYa&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="今天轮到我分享，主题 event loop 事件循环。 分享过程用一个字形容就是 尬…… 真的很尬。本来自己就是一个不善言辞的人，特别是当着这么多人的面分享（世界上最遥远的距离不是生与死的距离，而是我站在你面前，憋不出话）。刚开始很紧张，语速也快，后来渐渐找到了状态，但是……可能是我分享涉及到event loop的代码分享，自己说着很累，别人听着也累，最后磕磕碰碰花了一个小时才讲完，哎，本来还想冲">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记一次失败的分享">
+<meta property="og:url" content="http://yoursite.com/2018/01/05/记一次失败的分享/index.html">
+<meta property="og:site_name" content="ChongYa&#39;s Blog">
+<meta property="og:description" content="今天轮到我分享，主题 event loop 事件循环。 分享过程用一个字形容就是 尬…… 真的很尬。本来自己就是一个不善言辞的人，特别是当着这么多人的面分享（世界上最遥远的距离不是生与死的距离，而是我站在你面前，憋不出话）。刚开始很紧张，语速也快，后来渐渐找到了状态，但是……可能是我分享涉及到event loop的代码分享，自己说着很累，别人听着也累，最后磕磕碰碰花了一个小时才讲完，哎，本来还想冲">
+<meta property="og:updated_time" content="2018-01-05T12:09:41.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="记一次失败的分享">
+<meta name="twitter:description" content="今天轮到我分享，主题 event loop 事件循环。 分享过程用一个字形容就是 尬…… 真的很尬。本来自己就是一个不善言辞的人，特别是当着这么多人的面分享（世界上最遥远的距离不是生与死的距离，而是我站在你面前，憋不出话）。刚开始很紧张，语速也快，后来渐渐找到了状态，但是……可能是我分享涉及到event loop的代码分享，自己说着很累，别人听着也累，最后磕磕碰碰花了一个小时才讲完，哎，本来还想冲">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/typing.css">
+  <link rel="stylesheet" href="/css/donate.css">
+  
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  
+</head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-记一次失败的分享" class="article article-type-post" itemscope itemprop="blogPost">
+  <header id="header" class="header">
+  <nav id="main-nav" class="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      记一次失败的分享
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry typo" itemprop="articleBody">
+      
+        <p>今天轮到我分享，主题 event loop 事件循环。</p>
+<p>分享过程用一个字形容就是 尬…… 真的很尬。本来自己就是一个不善言辞的人，特别是当着这么多人的面分享（世界上最遥远的距离不是生与死的距离，而是我站在你面前，憋不出话）。刚开始很紧张，语速也快，后来渐渐找到了状态，但是……可能是我分享涉及到event loop的代码分享，自己说着很累，别人听着也累，最后磕磕碰碰花了一个小时才讲完，哎，本来还想冲击下分享的前几名。</p>
+<p>事实上，我为了这次分享，花了很多精力，看了很多有关event loop的文章，还去扒了下node底层的代码和libuv的代码，分享之前也演练了好几遍。结果让我非常不满意。这次的分享还不如上一次分享 跨域。</p>
+<p>分析下本次失败的原因吧：</p>
+<p>1. <strong>紧张</strong>。这点是致命的，从小就害怕与别人交流，尤其是陌生人，特别当着一群人的面。我也有在不断的暗示自己，要多与别人交流，但是还是缺少历练吧，分享之前的自我暗示很重要，要相信自己，你一紧张，嘴巴就打结，脑袋就会变空白。</p>
+<p>2. <strong>节奏</strong>。可能是因为紧张的原因吧，语速一直比较快。别人估计都反应不过来我在说什么，无论是演讲，还是分享都是需要节奏的，让别人的注意力跟着你的节奏走。事实上，偶尔的停顿和间隔，可以帮助你有更多时间缓冲，有更多时间去合理组织你接下来需要表达的东西。如果有卡壳，别着急，顿一顿，想一想。</p>
+<p>3. <strong>材料</strong>。前面两点是主观因素，材料是客观因素。虽然我有搜集很多材料，但是演讲的时候使用的是marp转换的幻灯片，效果不是很理想，以后还是用ppt或者pdf比较好。</p>
+<p>4. <strong>踩点。</strong>虽然分享的地点就在我附近，但是一直没觉得投影仪这么难用，今天投影出来的图像只有电脑屏幕中图像的一半，对我的讲解造成很大的障碍，所以以后分享要事先去分享的地点试用下仪器，如果出现问题，也可以提前调整。</p>
+<p>5. <strong>内容</strong>。其实，event loop这个主题，我觉得还是比较能吸引我们前端眼球的，但是，涉及到代码的时候，内容讲解就会比较枯燥，特别是犯了前面几个错误以后，小伙伴们听着也没啥劲头，所以我在想是否以后分享尽量避免过多的代码讲解，而是多讲解下上层的东西……不过有一点我觉得，不管听众什么反应，自己千万不能觉得无聊枯燥。</p>
+<p>希望自己能快速成长起来^_^</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="/2018/01/05/记一次失败的分享/" class="article-date">
+  <time datetime="2018-01-05T12:09:41.000Z" itemprop="datePublished">2018-01-05</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <span id="article-nav-newer" class="article-nav-link-wrap newer"></span>
+  
+  
+    <a href="/2017/10/10/hello-world/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Hello World</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+        <ul class="footer-links">
+          
+            <li><a href="/archives/"><span class="fa fa-book"></span></a></li>
+          
+            <li><a href="https://github.com"><span class="fa fa-globe"></span></a></li>
+          
+            <li><a href="https://twitter.com/"><span class="fa fa-twitter"></span></a></li>
+          
+            <li><a href="https://github.com/"><span class="fa fa-github-alt"></span></a></li>
+          
+            <li><a href="https://www.youtube.com/"><span class="fa fa-youtube-play"></span></a></li>
+          
+            <li><a href="https://stackoverflow.com/"><span class="fa fa-stack-overflow"></span></a></li>
+          
+            <li><a href="https://plus.google.com/"><span class="fa fa-google-plus"></span></a></li>
+          
+            <li><a href="/atom.xml"><span class="fa fa-rss"></span></a></li>
+          
+        </ul>
+	    
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>You only get one shot, do not miss your chance to blow!</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/typing.js"></script>
+<!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>
