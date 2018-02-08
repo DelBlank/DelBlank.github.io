@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>GRASP 模式 | ChongYa&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="《UML 和模式应用》提出软件设计的关键是职责分配，为此提出了GRASP（General Responsibility Assignment Software Patterns） 模式。GRASP 模式包括 9 种（5 种核心 + 4 种扩展）软件职责分配模式：   信息专家（Information Expert) 创建者（Creator） 低耦合（Low Coupling） 高内聚（High C">
+<meta property="og:type" content="article">
+<meta property="og:title" content="GRASP 模式">
+<meta property="og:url" content="http://yoursite.com/2018/02/08/GRASP 模式/index.html">
+<meta property="og:site_name" content="ChongYa&#39;s Blog">
+<meta property="og:description" content="《UML 和模式应用》提出软件设计的关键是职责分配，为此提出了GRASP（General Responsibility Assignment Software Patterns） 模式。GRASP 模式包括 9 种（5 种核心 + 4 种扩展）软件职责分配模式：   信息专家（Information Expert) 创建者（Creator） 低耦合（Low Coupling） 高内聚（High C">
+<meta property="og:updated_time" content="2018-02-08T13:18:29.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="GRASP 模式">
+<meta name="twitter:description" content="《UML 和模式应用》提出软件设计的关键是职责分配，为此提出了GRASP（General Responsibility Assignment Software Patterns） 模式。GRASP 模式包括 9 种（5 种核心 + 4 种扩展）软件职责分配模式：   信息专家（Information Expert) 创建者（Creator） 低耦合（Low Coupling） 高内聚（High C">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/typing.css">
+  <link rel="stylesheet" href="/css/donate.css">
+  
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  
+</head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-GRASP 模式" class="article article-type-post" itemscope itemprop="blogPost">
+  <header id="header" class="header">
+  <nav id="main-nav" class="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      GRASP 模式
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry typo" itemprop="articleBody">
+      
+        <p style="word-break: break-all; word-wrap: break-word">《UML 和模式应用》提出软件设计的关键是<strong>职责分配</strong>，为此提出了<strong>GRASP</strong>（General Responsibility Assignment Software Patterns） 模式。GRASP 模式包括 9 种（5 种核心 + 4 种扩展）软件职责分配模式：</p>
+
+<ol>
+<li>信息专家（Information Expert)</li>
+<li>创建者（Creator）</li>
+<li>低耦合（Low Coupling）</li>
+<li>高内聚（High Cohesion）</li>
+<li>控制器 （Controller）</li>
+<li>多态（Polymorphism）</li>
+<li>纯虚构（Pure Fabrication）</li>
+<li>间接（Indirection）</li>
+<li>受保护的变化（Protected Variation）</li>
+</ol>
+<p>所谓“没有规矩，不成方圆”，上至国家，下至企业，无论是何种组织都需要一套规则去约束与协调，规则的存在能够一定程度上保证组织的“稳定性”和提升组织的“生产效率”。软件或者系统设计同样需要一套规则去指导开发者合理地进行开发。系统设计最基础的要求就是</p>
+<ul>
+<li>明确系统的组成部分</li>
+<li>划分好各部分的职责</li>
+<li>协调各部分履行职责</li>
+</ul>
+<p>GRASP 模式其实是面向对象的一种设计模式，面向对象的分析与设计过程，一般遵循如下步骤：</p>
+<ol>
+<li>从真实问题中抽象出领域模型</li>
+<li>从领域模型归纳出相关类</li>
+<li>给每个类分配相应职责</li>
+<li>定义各类间的联系与协作方式</li>
+</ol>
+<p>GRASP 模式主要指导设计面向对象的第 3 步与第 4 步。</p>
+<h2 id="1-信息专家"><a href="#1-信息专家" class="headerlink" title="1. 信息专家"></a>1. 信息专家</h2><p>该模式的关注点在于：<strong>如何合理地给一个对象分配职责？</strong></p>
+<p><strong>
+</strong></p>
+<p>系统越庞大，涉及的对象也就越多，合理地为这些对象分配相应的职责，有利于对系统的理解、维护以及扩展。</p>
+<p>信息专家要求：<strong>把一项职责分配给含有相关信息足够多的专家（对象）</strong>。换句话说，如果某个对象含有履行某项职责所需的全部信息，那么就应该把这项职责分配给该对象。由于对象仅使用自身的信息就可以完成相应职责，因此信息得到了封装，对象间的耦合度随之降低，而对象内部内聚程度更高。</p>
+<p>例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 商品编号</span></div><div class="line"><span class="keyword">let</span> id = <span class="number">0</span></div><div class="line"><span class="comment">// 商品类 Goods</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Goods</span> </span>&#123;</div><div class="line">  <span class="comment">// Goods 构造函数</span></div><div class="line">  <span class="keyword">constructor</span>(type)&#123;</div><div class="line">    <span class="keyword">this</span>.id = id++   <span class="comment">// 编号</span></div><div class="line">    <span class="keyword">this</span>.type = type  <span class="comment">// 类型</span></div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="comment">// 比较两个商品是否相同</span></div><div class="line">  isSameGoods(otherGoods)&#123;</div><div class="line">    <span class="keyword">return</span> <span class="keyword">this</span>.id === otherGoods.id</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">&#125;</div><div class="line"><span class="comment">// 购物车 ShopCar</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ShopCar</span> </span>&#123;</div><div class="line">  <span class="comment">// ShopCar 构造函数</span></div><div class="line">  <span class="keyword">constructor</span>()&#123;</div><div class="line">    <span class="keyword">this</span>.goodsArr = []</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="comment">// 添加商品到购物车</span></div><div class="line">  addGoods(newGoods)&#123;</div><div class="line">    <span class="keyword">const</span> goodsArr = <span class="keyword">this</span>.goodsArr.slice()</div><div class="line">    goodsArr.forEach(<span class="function"><span class="params">goodsObj</span> =&gt;</span> &#123;</div><div class="line">      <span class="comment">// 判断新增的商品是否存在于购物车</span></div><div class="line">      <span class="keyword">if</span>(goodsObj.goods.isSameGoods(newGoods))&#123;</div><div class="line">        goodsObj.num++</div><div class="line">      &#125;</div><div class="line">      <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">this</span>.goodsArr.push(&#123;</div><div class="line">          goods: newGoods,</div><div class="line">          num: <span class="number">1</span></div><div class="line">        &#125;)</div><div class="line">      &#125;</div><div class="line">    &#125;)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">const</span> shopCar = <span class="keyword">new</span> ShopCar()</div><div class="line"><span class="keyword">const</span> book = <span class="keyword">new</span> Goods(<span class="string">'book'</span>)</div><div class="line"><span class="keyword">const</span> pen = <span class="keyword">new</span> Goods(<span class="string">'pen'</span>)</div><div class="line">shopCar.addGoods(book)</div><div class="line">shopCar.addGoods(pen)</div><div class="line"></div><div class="line"><span class="comment">/* shopCar.goodsArr = [&#123;</span></div><div class="line"><span class="comment">  goods: book,</span></div><div class="line"><span class="comment">  num: 2</span></div><div class="line"><span class="comment">&#125;,&#123;</span></div><div class="line"><span class="comment">  goods: pen,</span></div><div class="line"><span class="comment">  num: 1</span></div><div class="line"><span class="comment">&#125;]</span></div><div class="line"><span class="comment">*/</span></div></pre></td></tr></table></figure>
+<p style="word-break: break-all; word-wrap: break-word">当向购物车添加某个商品时，需要先判断该类商品是否已在购物车中，要满足这个需求，只需要比较新增的商品编号和购物车中的商品编号是否相同，而拥有这些信息的就是商品本身，因此把比较两个商品是否相同的职责分配给商品对象Goods。</p>
+
+<p>该模式的缺点：可能会导致信息专家对象承担过多的职责。</p>
+<h2 id="2-创造者"><a href="#2-创造者" class="headerlink" title="2. 创造者"></a>2. 创造者</h2><p>该模式关注点在于：<strong>对于某个类，将创建类实例的职责分配给谁？</strong></p>
+<p>在面向对象的开发过程中，实例化类是必不可少的操作，合理地分配类的实例化职责可以有效降低系统的耦合度。</p>
+<p>如果符合下面一项或多项条件，则将 A 类实例化职责分配给 B 类：</p>
+<ul>
+<li>B 包含 A</li>
+<li>B 聚合 A</li>
+<li>B 拥有 A 的初始化数据，并在创建 A 时将数据传递给 A</li>
+<li>B 记录 A 的状态</li>
+<li>B 直接使用 A 的实例</li>
+</ul>
+<p style="word-break: break-all; word-wrap: break-word;text-align: justify;"><br>通常将 A 的实例化操作分配给满足以上条件最多的 B。<strong>B 满足以上条件的一项或多项说明 A 与 B 之间本来就存在耦合，将 A 实例化操作分配给 B 而不是其他类，可以一定程度上防止耦合度的加深。</strong></p>
+
+<p>购物车与商品的实例中，商品存于购物车中，但是没有购物车，商品依然存在，故购物车类 ShopCar 聚合商品类 Goods ，所以应该把实例化 Goods 的任务交给 ShopCar 而非脚本代码。代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">ShopCar</span> </span>&#123;</div><div class="line">  ...</div><div class="line">  </div><div class="line">  <span class="comment">// 构建商品实例并把它加入到 goodsArr</span></div><div class="line">  createGoodsInstance(type)&#123;</div><div class="line">    <span class="keyword">const</span> goods = <span class="keyword">new</span> Goods(type)</div><div class="line">    <span class="keyword">this</span>.addGoods(goods)</div><div class="line">    <span class="keyword">return</span> goods</div><div class="line">  &#125;</div><div class="line">  ...</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">const</span> shopCar = <span class="keyword">new</span> ShopCar()</div><div class="line"><span class="keyword">const</span> book = shopCar.createGoodsInstance(<span class="string">'book'</span>)</div><div class="line"><span class="keyword">const</span> pen = shopCar.createGoodsInstance(<span class="string">'pen'</span>)</div></pre></td></tr></table></figure>
+<h2 id="3-低耦合"><a href="#3-低耦合" class="headerlink" title="3. 低耦合"></a>3. 低耦合</h2><p style="word-break: break-all; word-wrap: break-word;text-align: justify;">该模式要求两个类间的依赖关系尽可能弱，依赖越弱，说明联系越不紧密，相互间的影响也就越小。作为开发者，我们希望在开发 A 类的过程中，对 A 的所有修改都尽可能小地影响其他关联 A 的类，甚至是不影响。相比于高耦合的系统，一个低耦合的系统后期的维护和开发成本肯定要低很多。</p>
+
+<p>对于一个面向对象的系统而言，如果任意两个类间都不存在耦合，对于开发者而言，其开发和维护成本必然是最低的，但是这样一个不存在相互耦合类的系统是没有意义的，因为所有类都是独立不相关的，相互之间没有消息传递，这种情况最多只能创建出一个类库。作为系统，各部分之间必然是有联系的，我们要做的是将类间的联系降到最低。</p>
+<p>在一个面向对象的系统中，有以下 5 种耦合形式（从上到下，耦合越高）：</p>
+<ul>
+<li>零耦合（nil coupling）：两个类丝毫不依赖于对方</li>
+<li>导出耦合（export coupling）：一个类依赖于另一个类的公有接口</li>
+<li>授权耦合（overt coupling）：一个类经允许，使用另一个类的实现细节</li>
+<li>自行耦合（covert coupling）：一个类未经允许，使用另一个类的实现细节</li>
+<li>暗中耦合（surreptitious coupling）：一个类通过某种方式知道了另一个类的实现细节</li>
+</ul>
+<p>零耦合是最低程度的耦合，因为两个类互相不影响。一般地，低耦合设计模式要求<strong>两个类之间要么是零耦合的，要么是导出耦合的，应该尽量减少授权耦合、自行耦合和暗中耦合。</strong></p>
+<p><strong>
+</strong></p>
+<p>类 A 和 类 B 间常见的导出耦合方式有：</p>
+<ul>
+<li>A具有引用B的实例或B自身的属性</li>
+<li>A的实例调用B的实例的服务</li>
+<li>A具有以任何形式引用B的实例或B自身的方法</li>
+<li>A是B的直接或间接子类</li>
+<li>B是接口，而A是此接口的实现</li>
+</ul>
+<p><strong>
+</strong></p>
+<p style="word-break: break-all; word-wrap: break-word;text-align: justify;">比如 ShopCar 类的 addGoods 方法中，使用 Goods 类的 isSameGoods 方法去判断新增的 goods 是否已经在 shopCar 中，这种方式使得 ShopCar 类和 Goods 类导出耦合。</p>
+
+<h2 id="4-高内聚"><a href="#4-高内聚" class="headerlink" title="4. 高内聚"></a>4. 高内聚</h2><p>高内聚关注：合理分配职责，使得类的方法符合类的描述的领域模型，并且方法之间要有较强的关联性。</p>
+<p>高内聚要求在设计类或者领域模型的时候，要有针对性，即设计出来的类要有重点，便于理解和管理并且支持低耦合。</p>
+<p>高内聚与低耦合是软件设计最基础的原则，高内聚的设计可以一定程度上使低耦合的实现更容易。</p>
+<p>一个类是否高内聚可以采用如下的评价准则：</p>
+<ul>
+<li>正交性：模块内部不同方法间重复功能有多少，重复功能越少，正交性越高</li>
+<li>紧凑性：模块通用方法有多少以及通用方法的参数有多少，通用方法及参数越少，紧凑性越高，通常一个类中的通用方法不超过 3 个，每个方法的参数不超过7个</li>
+</ul>
+<h2 id="5-控制器"><a href="#5-控制器" class="headerlink" title="5. 控制器"></a>5. 控制器</h2><p style="word-break: break-all; word-wrap: break-word;text-align: justify;">有了各司其职的类，还需要有个’控制器’去合理安排各个类去完成自身的职责，好比一个由炮兵、步兵与通信员组成的部队，需要一个指挥官去指挥步兵何时冲锋，指挥炮兵如何为步兵打掩护，指挥通信员与总部沟通战况。</p>
+
+<p style="word-break: break-all; word-wrap: break-word;text-align: justify;">控制器主要职责：<strong>负责收发信息，委派任务。</strong>换言之，控制器根据接收到的信息，去调用相关类的方法或者 API 接口来完成对应功能。从用户角度看，一个简单的功能（如往购物车添加商品），只需简单的操作（点击个‘添加’按钮）就可以完成，而从底层看，可能会涉及到系统内部多个类间的相互合作（比如 Goods 类和 ShopCar 类），而控制器只要合理的调用相关对象（Goods 对象和 ShopCar 对象）的方法就可以完成用户需要的功能（往购物车添加商品）。再比如传统的 MVC 架构，当某个控制器接收到页面发起的请求，它就需要通过对数据模型增删改查操作来完成页面请求的功能，期间可能会涉及到多个数据模型的不同操作。</p>
+
+<p style="word-break: break-all; word-wrap: break-word;text-align: justify;">控制器充当着调度中心的角色，根据接收到的或者内部产生的已知信息去调度不同的类对象完成自己的职责，对于类对象而言，不用关心信息（参数）从哪里来，也不用担心其他对象如何收到自己产生的信息，因此对象内部的方法其功能更简单，代码量更少，而对象之间的耦合度更低。</p>
+
+<h2 id="6-多态"><a href="#6-多态" class="headerlink" title="6. 多态"></a>6. 多态</h2><p style="word-break: break-all; word-wrap: break-word;text-align: justify;">事物是紧密联系的，相似的事物存在’共性’，对于相似的不同事物，其’共性’又有各自的’特性’，比如同样是人，同样拥有需要吃饭的‘共性’，别人吃饭‘特性’是慢，你吃饭的特性是’快’。复杂的面向对象系统，涉及到很多类，这些类间可能存在‘共性’，也可能拥有自己的‘特性’，对于开发者来讲，找出这些’共性’与’特性’，不仅可以减小代码量，更能够让代码变的更加语义化，更加容易维护。<strong>找出对象的’共性’与’特性’，其本身是对事物本质的一次探索。</strong></p>
+
+<p><strong>多态是为了让系统构造的模型及模型的行为更加多样。</strong>这个世界是一个多元化的世界，同理系统开发也需要拥有多样性。<strong>但是多态性不仅仅关注系统的多样性，它还关注如何构建容易理解与维护的多样性。</strong></p>
+<p><strong>
+</strong></p>
+<p>比如用来描述商品的 Goods 类，拥有商品编号 id，商品类型 type 和比较商品是否相同的方法 isSameGoods，不仅如此，Goods 类还应该拥有计算当天商品价格的方法 calcGoodsPrice，任意商品都拥有上述四项，因此这四项是‘共性’，但是对于钢笔 pen 类商品和数据 book 类商品计算价格的方式不同。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Goods</span></span>&#123;</div><div class="line">  ...</div><div class="line">  </div><div class="line">  <span class="comment">// 根据不同类型的商品计算其价格</span></div><div class="line">  calcGoodsPrice()&#123;</div><div class="line">    <span class="keyword">if</span>(<span class="keyword">this</span>.type===<span class="string">'pen'</span>)&#123;</div><div class="line">      <span class="keyword">return</span> <span class="number">20</span> * <span class="number">0.7</span></div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> <span class="keyword">if</span>(<span class="keyword">this</span>.type === <span class="string">'book'</span>)&#123;</div><div class="line">      <span class="keyword">return</span> <span class="number">10</span> * <span class="number">0.8</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上述代码通过 if/else 语句实现了 Goods 类计算价格的多样性，但是商品的种类有很多，完全通过 if/else 语句去实现，那么 calcGoodsPrice 函数就会让人难以直视，在编译的时候，对于 calcGoodsPrice 的每次修改都会影响到它的对象，这显然不可取，更好的做法是采用继承，先继承‘共性’，后实现’特性’。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// Pen 类</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pen</span> <span class="keyword">extends</span> <span class="title">Goods</span> </span>&#123;</div><div class="line">  <span class="keyword">constructor</span>()&#123;</div><div class="line">    <span class="keyword">super</span>(<span class="string">'pen'</span>)</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  calcGoodsPrice()&#123;</div><div class="line">    <span class="keyword">return</span> <span class="number">20</span> * <span class="number">0.7</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// Book 类</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Book</span> <span class="keyword">extends</span> <span class="title">Goods</span> </span>&#123;</div><div class="line">  <span class="keyword">constructor</span>()&#123;</div><div class="line">    <span class="keyword">super</span>(<span class="string">'book'</span>)</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  calcGoodsPrice()&#123;</div><div class="line">    <span class="keyword">return</span> <span class="number">10</span> * <span class="number">0.8</span></div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>这样只要不改基类 Goods 的代码，Pen 和 Book 之间就互不影响。</p>
+<p><strong>合理运用多态性，将接口与具体实现分离，在接口不变的情况下，对实现的扩展和维护更加容易。</strong></p>
+<h2 id="7-纯虚构"><a href="#7-纯虚构" class="headerlink" title="7. 纯虚构"></a>7. 纯虚构</h2><p>纯虚构关注的是<strong>针对真实世界中不存在的类，来提取能达成高内聚和低耦合目标的虚构类。</strong>常见的场景是当信息专家模式无法满足系统的高内聚和低耦合目标的时候，需要创建虚构类来达成这两个目标。</p>
+<p>比如后台管理系统，经常会有把模型类（Model）的数据写入数据库的场景，根据信息专家模式，由于每个模型类都拥有要写入数据的信息，因此应该把写入职责分配给对应的模型类。但是，将写入数据职责分配给模型类，会使得模型类内部耦合很多数据库相关的操作，模型类内聚程度就会降低。常用的做法是对在模型类之上再构建一个类，比如开发者常常会往系统中加入 Daos 文件夹用以存放虚构的类。<strong>换言之，构建虚构类实质是对已有数据模型进行更为抽象的建模，并以此来降低数据与业务的耦合。</strong></p>
+<h2 id="8-间接"><a href="#8-间接" class="headerlink" title="8. 间接"></a>8. 间接</h2><p>间接性模式关注的是<strong>如何通过构造’中介’来避免两个或多个对象之间直接耦合。</strong></p>
+<p>在计算机领域有这么一句著名的话：</p>
+<blockquote>
+<p>计算机科学领域的任何问题都可以通过增加一个间接的中间层来解决。</p>
+</blockquote>
+<p>而间接性模式则是通过构造中间层来降低系统的耦合度，通过将职责分配给中介对象使其作为其他构件或服务之间的媒介，以避免它们之间的直接耦合。纯虚构模式其实是间接性模式一种实现方式。</p>
+<h2 id="9-受保护的变化"><a href="#9-受保护的变化" class="headerlink" title="9. 受保护的变化"></a>9. 受保护的变化</h2><p>受保护的变化，又叫防止变异，该模式关注如何<strong>设计对象、子系统，使其内部的变化对其他关联对象或系统影响最小</strong>。</p>
+<p>如果说高内聚和低耦合是我们希望达成的目标，那么防止变异原则则是达成这种目标的关键方法。<strong>防止变异期望开发者能在开发过程中尽可能的预见到系统的未来变化和当前不稳定性，通过分配职责给稳定的接口来减小变化带来的影响</strong>。</p>
+<p>为了防止变异又提出如下 6 个软件设计原则：</p>
+<ul>
+<li><p>单一职责原则</p>
+<p><strong>一个类应该只负责单一的职责。</strong></p>
+<p>这里的’单一’指的是某一类强相关的职责，而不是具体某一项职责。该原则不仅仅适用于类，对于接口或者函数同样适用。将某个或者某类功能收敛到某个类或者接口内部，可以增强系统的内聚性与降低系统的耦合度，并且更容易维护该功能。</p>
+<p>在常见的生产流水线中，每个人各司其职，职责可以拆分很细，对于每个人，职责可以很简单，某一环出了事故也很容易定位事故发生的地方。类似于流水线生产，单一职责要求开发者对业务理解比较深入，能够拆分细粒度的职责。</p>
+</li>
+<li><p>里氏替换原则</p>
+<p>里氏替换原则的原始定义为：如果对于类型S的每个对象o1存在类型T的对象o2，那么对于所有定义了T的程序P来说，当用o1替换o2并且S是T的子类型时，P的行为不会改变。</p>
+<p>换言之，在一个系统中，任何类的对象都可以由该类的任何一个子类的任何对象给替换掉，而整个系统的行为不变。 里氏替换原则的目的是为了构建可插拔的类，并使得每个类的定义及其行为更加语义化，通过里式替换的类其行为不会影响到系统的行为。</p>
+</li>
+<li><p>依赖倒置原则</p>
+<p><strong>抽象不应该依赖于实现细节，实现细节应该依赖于抽象。</strong></p>
+<p>抽象的模型往往是稳定的，对外表现出来的行为应该是一致的，但是如何实现抽象的接口，不同的类实现的细节有差异。比如类 A 依赖类 B ，如果想改动 A 的代码，使其依赖类 C，那么类 C 和类 B 的差异程度越高，类 A 的代码改动量可能就会越大。如果将 A 依赖于 B 和 C 接口抽象出来，使 A 依赖抽象，而非 B 或者 C，A 依赖于 B 和 C 的部分则需要根据抽象出来的接口规范各自维护一份代码。</p>
+<p>抽象类似于一种工业产品规范，不同的产品（类）需要根据这个规范（抽象接口）去实现，这样对于上层应用来说，只需要知道这套规范即可，而不用关心底层具体实现细节。</p>
+</li>
+<li><p>接口隔离原则</p>
+<p><strong>该原则表示一个类对另一个类的依赖，应该建立在最小的接口之上。</strong></p>
+<p>类与类的依赖不应该包含无用的接口，根据该原则提出的最小依赖，可以降低系统中冗余的耦合。</p>
+</li>
+<li><p>迪米特法则</p>
+<p><strong> 不要历经远距离的对象结构路径去向远距离的间接对象直接发送消息。</strong></p>
+<p>假设系统中存在 A，B，C，D 四个类，A 包含了 B，B 包含了 C，C 又包含 D，那么 A 的实例 a 中就一定包含 D 的实例 d，此时不允许 a 直接向 d 发送消息，如果这么做，引入 A 与 D 之间毫无道理的耦合，并且如果两个对象依赖的路径越长，直接发送消息的方式稳定性就回越差。 </p>
+<p>迪米特法则又称最小知识原则，即一个类应该对其他类的实现细节知道的越少越好。**对于 A，它不应该知道 B 中含有 C 的细节，同理 B 也不应该知道 C 中包含 D 的细节，可以通过封装来掩盖这些细节，‘不该知道的别打听’，系统的耦合度才会小</p>
+</li>
+<li><p>开放封闭原则</p>
+<p>该原则描述的是如何扩展和维护编写的类。</p>
+<p><strong> 要求：允许对模块进行扩展，但不允许对模块进行修改。</strong></p>
+<p>在代码层面，体现在允许往模块内部添加新代码和新特性，但是与此同时不允许修改模块的源代码，即代码不允许有 break changes。</p>
+<p>在开发框架的时候，该原则尤其适用。因为框架会有版本迭代，在升级的时候，既要考虑对旧版本的兼容，又要考虑新功能的添加。但是很多时候，添加新特性会涉及到对原有代码的修改，开放封闭原则强调开发者在后续维护和开发老模块时，要延续原有模块的设计，不要违背模块的设计初衷，因此在模块设计之初，就需要对模块进行抽象（参考依赖倒置原则）、封装等。</p>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <ul class="article-meta">
+        <li>
+          <span class="label">Published Date:</span>
+          <a href="/2018/02/08/GRASP 模式/" class="article-date">
+  <time datetime="2018-02-07T16:00:00.000Z" itemprop="datePublished">2018-02-08</time>
+</a>
+
+        </li>
+        
+        
+        <hr/>
+      </ul>
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <span id="article-nav-newer" class="article-nav-link-wrap newer"></span>
+  
+  
+    <a href="/2018/01/05/记一次失败的分享/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">记一次失败的分享</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+        <ul class="footer-links">
+          
+            <li><a href="/archives/"><span class="fa fa-book"></span></a></li>
+          
+            <li><a href="https://github.com"><span class="fa fa-globe"></span></a></li>
+          
+            <li><a href="https://twitter.com/"><span class="fa fa-twitter"></span></a></li>
+          
+            <li><a href="https://github.com/"><span class="fa fa-github-alt"></span></a></li>
+          
+            <li><a href="https://www.youtube.com/"><span class="fa fa-youtube-play"></span></a></li>
+          
+            <li><a href="https://stackoverflow.com/"><span class="fa fa-stack-overflow"></span></a></li>
+          
+            <li><a href="https://plus.google.com/"><span class="fa fa-google-plus"></span></a></li>
+          
+            <li><a href="/atom.xml"><span class="fa fa-rss"></span></a></li>
+          
+        </ul>
+	    
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>You only get one shot, do not miss your chance to blow!</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/typing.js"></script>
+<!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>
