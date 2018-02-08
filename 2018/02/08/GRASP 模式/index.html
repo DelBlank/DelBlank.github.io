@@ -11,7 +11,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/02/08/GRASP 模式/index.html">
 <meta property="og:site_name" content="ChongYa&#39;s Blog">
 <meta property="og:description" content="《UML 和模式应用》提出软件设计的关键是职责分配，为此提出了GRASP（General Responsibility Assignment Software Patterns） 模式。GRASP 模式包括 9 种（5 种核心 + 4 种扩展）软件职责分配模式：   信息专家（Information Expert) 创建者（Creator） 低耦合（Low Coupling） 高内聚（High C">
-<meta property="og:updated_time" content="2018-02-08T13:18:29.000Z">
+<meta property="og:updated_time" content="2018-02-08T13:21:10.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="GRASP 模式">
 <meta name="twitter:description" content="《UML 和模式应用》提出软件设计的关键是职责分配，为此提出了GRASP（General Responsibility Assignment Software Patterns） 模式。GRASP 模式包括 9 种（5 种核心 + 4 种扩展）软件职责分配模式：   信息专家（Information Expert) 创建者（Creator） 低耦合（Low Coupling） 高内聚（High C">
@@ -196,7 +196,7 @@
 <li><p>迪米特法则</p>
 <p><strong> 不要历经远距离的对象结构路径去向远距离的间接对象直接发送消息。</strong></p>
 <p>假设系统中存在 A，B，C，D 四个类，A 包含了 B，B 包含了 C，C 又包含 D，那么 A 的实例 a 中就一定包含 D 的实例 d，此时不允许 a 直接向 d 发送消息，如果这么做，引入 A 与 D 之间毫无道理的耦合，并且如果两个对象依赖的路径越长，直接发送消息的方式稳定性就回越差。 </p>
-<p>迪米特法则又称最小知识原则，即一个类应该对其他类的实现细节知道的越少越好。**对于 A，它不应该知道 B 中含有 C 的细节，同理 B 也不应该知道 C 中包含 D 的细节，可以通过封装来掩盖这些细节，‘不该知道的别打听’，系统的耦合度才会小</p>
+<p><strong>迪米特法则又称最小知识原则，即一个类应该对其他类的实现细节知道的越少越好。</strong>对于 A，它不应该知道 B 中含有 C 的细节，同理 B 也不应该知道 C 中包含 D 的细节，可以通过封装来掩盖这些细节，‘不该知道的别打听’，系统的耦合度才会小</p>
 </li>
 <li><p>开放封闭原则</p>
 <p>该原则描述的是如何扩展和维护编写的类。</p>

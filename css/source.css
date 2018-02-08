@@ -219,12 +219,6 @@ blockquote {
     margin-bottom: 15px;
   }
 
-  p {
-    word-break: break-all; 
-    word-wrap: break-word;
-    text-align: justify;
-  }
-
   a {
     border: 0;
   }
