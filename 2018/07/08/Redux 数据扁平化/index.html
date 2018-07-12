@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>Redux 数据扁平化 | ChongYa&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近在用 redux 编写前端业务逻辑的时候，一直在思考对于同一个页面的业务，如何定义 store 的数据结构可以简化其操作。  普通程序员关心的是代码，优秀的程序员关心的是数据结构和它们之间的关系。 – linus  1.store 的组织结构一般的，redux 最上层 的 store 应该是一个树对象，这棵树又由很多 reducer 函数返回的子 store 对象组成。通常，我会根据页面去划分">
+<meta name="keywords" content="React">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Redux 数据扁平化">
+<meta property="og:url" content="http://yoursite.com/2018/07/08/Redux 数据扁平化/index.html">
+<meta property="og:site_name" content="ChongYa&#39;s Blog">
+<meta property="og:description" content="最近在用 redux 编写前端业务逻辑的时候，一直在思考对于同一个页面的业务，如何定义 store 的数据结构可以简化其操作。  普通程序员关心的是代码，优秀的程序员关心的是数据结构和它们之间的关系。 – linus  1.store 的组织结构一般的，redux 最上层 的 store 应该是一个树对象，这棵树又由很多 reducer 函数返回的子 store 对象组成。通常，我会根据页面去划分">
+<meta property="og:image" content="http://yoursite.com/images/resources/19AD67F2480CE7456940DDD913A2B394.png">
+<meta property="og:updated_time" content="2018-07-12T13:30:56.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redux 数据扁平化">
+<meta name="twitter:description" content="最近在用 redux 编写前端业务逻辑的时候，一直在思考对于同一个页面的业务，如何定义 store 的数据结构可以简化其操作。  普通程序员关心的是代码，优秀的程序员关心的是数据结构和它们之间的关系。 – linus  1.store 的组织结构一般的，redux 最上层 的 store 应该是一个树对象，这棵树又由很多 reducer 函数返回的子 store 对象组成。通常，我会根据页面去划分">
+<meta name="twitter:image" content="http://yoursite.com/images/resources/19AD67F2480CE7456940DDD913A2B394.png">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/typing.css">
+  <link rel="stylesheet" href="/css/donate.css">
+  
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  
+</head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-Redux 数据扁平化" class="article article-type-post" itemscope itemprop="blogPost">
+  <header id="header" class="header">
+  <nav id="main-nav" class="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Redux 数据扁平化
+    </h1>
+  
+
+      </header>
+    
+    <ul class="article-meta">
+      <li>
+        <span class="label">Published Date:</span>
+        <a href="/2018/07/08/Redux 数据扁平化/" class="article-date">
+  <time datetime="2018-07-07T16:00:00.000Z" itemprop="datePublished">2018-07-08</time>
+</a>
+
+      </li>
+      
+      
+        <li>
+          <span class="label">Tag:</span>
+          
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/">React</a></li></ul>
+
+
+        </li>
+      
+      <hr/>
+    </ul>
+    <div class="article-entry typo" itemprop="articleBody">
+      
+        <p>最近在用 <code>redux</code> 编写前端业务逻辑的时候，一直在思考对于同一个页面的业务，如何定义 <code>store</code> 的数据结构可以简化其操作。</p>
+<blockquote>
+<p>普通程序员关心的是代码，优秀的程序员关心的是数据结构和它们之间的关系。 – linus</p>
+</blockquote>
+<h3 id="1-store-的组织结构"><a href="#1-store-的组织结构" class="headerlink" title="1.store 的组织结构"></a>1.<code>store</code> 的组织结构</h3><p>一般的，<code>redux</code> 最上层 的 <code>store</code> 应该是一个树对象，这棵树又由很多 <code>reducer</code> 函数返回的子 <code>store</code> 对象组成。通常，我会根据页面去划分不同的 <code>reducer</code>，在有些业务场景下，全局 <code>store</code> 可能还需要初始为某个具体对象。</p>
+<p><img src="/2018/07/08/Redux 数据扁平化/../../../../images/resources/19AD67F2480CE7456940DDD913A2B394.png" alt="redux-store.png"></p>
+<p>从上图可以看出，合理组织 <code>child store</code> 的数据结构可以简化对应 <code>reducer</code> 计算以及相应的 <code>action</code>。</p>
+<p>2.<code>child store</code> 的数据结构</p>
+<p><code>child store</code> 是一个包含若干属性的对象，属性值可以是任意值，对 <code>child store</code> 的操作成本主要集中在复杂属性值，比如数组与普通对象。</p>
+<h3 id="3-对-child-store-的操作"><a href="#3-对-child-store-的操作" class="headerlink" title="3.对 child store 的操作"></a>3.对 <code>child store</code> 的操作</h3><p>对于数据源，前端页面更关心：</p>
+<ul>
+<li>要展示的数据源从哪来</li>
+<li>触发某个 <code>action</code> 后，页面数据会发生什么变化</li>
+</ul>
+<p>对应到 <code>child store</code>，无非是对其进行<strong>增删改查</strong>四个操作，同时要区分是对一组数据的<strong>批量操作</strong>，还是对单条数据的<strong>单独操作</strong>。无论何种操作，要想快速完成，首先得快速定位操作的数据源位置，即 <code>child store</code> 的数据结构要便于快速搜索数据。</p>
+<h3 id="4-数据扁平化"><a href="#4-数据扁平化" class="headerlink" title="4.数据扁平化"></a>4.数据扁平化</h3><p>数据扁平化由数据库扁平化衍生而来，原指<strong>根据一系列所谓的标准形式重构关系型数据库，以减少数据冗余和提高数据完整性的过程</strong>。</p>
+<p>在前端应用中数据扁平化多用于将层级深，嵌套复杂的对象属性及值提取出来形成一个新对象，考虑一个简单的嵌套例子：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 复杂对象</span></div><div class="line"><span class="keyword">const</span> complexObj = &#123;</div><div class="line">  a: &#123;</div><div class="line">    b: &#123;</div><div class="line">      c: &#123;</div><div class="line">        d: <span class="string">'value1'</span>,</div><div class="line">        e: <span class="string">'value2'</span></div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 获取 d,e</span></div><div class="line">d = complexObj.a.b.c.d</div><div class="line">e = complexObj.a.b.c.e</div><div class="line"></div><div class="line"><span class="comment">// 扁平化对象</span></div><div class="line"><span class="keyword">const</span> normalObj = &#123;</div><div class="line">  d: <span class="string">'value1'</span>,</div><div class="line">  e: <span class="string">'value2'</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 获取 d,e</span></div><div class="line">d = normalObj.d</div><div class="line">e = normalObj.e</div></pre></td></tr></table></figure>
+<p>再看一个更具体的例子：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文章列表信息</span></div><div class="line"><span class="keyword">const</span> blogList = [</div><div class="line">&#123;</div><div class="line">  id: <span class="number">1</span>,</div><div class="line">  title: <span class="string">'扁平化'</span>,</div><div class="line">  content: <span class="string">'xxx'</span>,</div><div class="line">  author: &#123;</div><div class="line">    uid: <span class="number">1</span>,</div><div class="line">    name: <span class="string">'xxx'</span></div><div class="line">  &#125;</div><div class="line">&#125;,</div><div class="line">&#123;</div><div class="line">  id: <span class="number">2</span>,</div><div class="line">  title: <span class="string">'redux'</span>,</div><div class="line">  content: <span class="string">'xxx'</span>,</div><div class="line">  author: &#123;</div><div class="line">    uid: <span class="number">2</span>,</div><div class="line">    name: <span class="string">'yyy'</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">]</div></pre></td></tr></table></figure></p>
+<p><code>blogList</code> 包含了每篇文章的基础信息以及其作者的全部信息，如果要根据 <code>id</code> 查找某篇文章的信息，就必须执行如下语句：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 查找某篇文章</span></div><div class="line"><span class="keyword">const</span> blog = blogList.find(<span class="function"><span class="params">blog</span> =&gt;</span> blog.id === id)</div><div class="line"><span class="comment">// 获取文章作者信息</span></div><div class="line"><span class="keyword">const</span> author = blog.author</div></pre></td></tr></table></figure></p>
+<p>观察上面的查找语句，可以发现查询一篇 <code>blog</code> 需要花费时间复杂度为 <code>O(n)</code>，而且作者的基础信息冗余在了 <code>blog</code> 中，如果要查找某个作者信息就不得不通过其写的文章信息。对于查找文章及其信息的功能，扁平化后的数据结构如下：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 扁平化文章列表</span></div><div class="line"><span class="keyword">const</span> normalBlogList = &#123;</div><div class="line">  <span class="number">1</span>: &#123;</div><div class="line">    id: <span class="number">1</span>,</div><div class="line">    title: <span class="string">'扁平化'</span>,</div><div class="line">    content: <span class="string">'xxx'</span>,</div><div class="line">    author: <span class="number">1</span></div><div class="line">  &#125;,</div><div class="line">  <span class="number">2</span>: &#123;</div><div class="line">    id: <span class="number">2</span>,</div><div class="line">    title: <span class="string">'redux'</span>,</div><div class="line">    content: <span class="string">'xxx'</span>,</div><div class="line">    author: <span class="number">2</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"><span class="keyword">const</span> authorList = &#123;</div><div class="line">  <span class="number">1</span>: &#123;</div><div class="line">    uid: <span class="number">1</span>,</div><div class="line">    name: <span class="string">'xxx'</span></div><div class="line">  &#125;,</div><div class="line">  <span class="number">2</span>: &#123;</div><div class="line">    uid: <span class="number">2</span>,</div><div class="line">    name: <span class="string">'yyy'</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 查找某篇文章</span></div><div class="line"><span class="keyword">const</span> blog = normalBlogList[id]</div><div class="line"><span class="comment">// 获取作者信息</span></div><div class="line"><span class="keyword">const</span> author = authorList[blog.author]</div></pre></td></tr></table></figure></p>
+<p>扁平化文章列表之后，根据 <code>id</code> 查找某篇文章只需要花费 <code>O(1)</code> 的时间，而且将作者信息从文章信息中提取出来，避免两者冗余， 同时又没有损失数据完整性。</p>
+<p>总结下来，数据扁平化常见的做法是对复杂的数据结构作如下处理：</p>
+<ul>
+<li>提取层级较深的属性及其值，避免嵌套很深</li>
+<li>合理分离不同的数据对象，防止数据的冗余</li>
+<li>保证数据的完整性，避免数据信息的损失</li>
+</ul>
+<h3 id="5-普通对象和数组操作"><a href="#5-普通对象和数组操作" class="headerlink" title="5.普通对象和数组操作"></a>5.普通对象和数组操作</h3><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 普通 blogObj 对象</span></div><div class="line"><span class="keyword">const</span> blogObj = &#123;</div><div class="line">  xxx: &#123;</div><div class="line">    title: <span class="string">'扁平化'</span>,</div><div class="line">    content: <span class="string">'xxx'</span></div><div class="line">  &#125;,</div><div class="line">  yyy: &#123;</div><div class="line">    title: <span class="string">'redux'</span>,</div><div class="line">    content: <span class="string">'yyy'</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// blogArr 数组</span></div><div class="line"><span class="keyword">const</span> blogArr = [&#123;</div><div class="line">  id: <span class="string">'xxx'</span>,</div><div class="line">  title: <span class="string">'扁平化'</span>,</div><div class="line">  content: <span class="string">'xxx'</span></div><div class="line">&#125;,&#123;</div><div class="line">  id: <span class="string">'yyy'</span>,</div><div class="line">  title: <span class="string">'redux'</span>,</div><div class="line">  content: <span class="string">'yyy'</span></div><div class="line">&#125;]</div><div class="line"></div><div class="line"><span class="comment">// 查找 id 为 'xxx' 的 blog </span></div><div class="line"><span class="comment">// blogObj 时间复杂度 O(1)</span></div><div class="line">blog = blogObj[<span class="string">'xxx'</span>]</div><div class="line"></div><div class="line"><span class="comment">// blogArr 时间复杂度 O(n)</span></div><div class="line">blog = blogArr.find(<span class="function"><span class="params">blog</span> =&gt;</span> blog.id === <span class="string">'xxx'</span>)</div><div class="line"></div><div class="line"><span class="comment">// 查找第 2 个 blog</span></div><div class="line"><span class="comment">// 假设 blogObj 的属性按定义的顺序排列，时间复杂度 O(n)</span></div><div class="line"><span class="keyword">let</span> i = <span class="number">0</span></div><div class="line"><span class="keyword">for</span>(<span class="keyword">let</span> p <span class="keyword">in</span> blogObj)&#123;</div><div class="line">  i++</div><div class="line">  <span class="keyword">if</span>(i === <span class="number">2</span>) &#123;</div><div class="line">    blog = blogObj[p]</div><div class="line">    <span class="keyword">break</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// blogArr 时间复杂度 O(1)</span></div><div class="line">blog = blogArr[<span class="number">1</span>]</div><div class="line"></div><div class="line"><span class="comment">// 查找 title 为 'redux' 的 blog</span></div><div class="line"><span class="comment">// blogObj 时间复杂度 O(n)</span></div><div class="line"><span class="keyword">for</span>(<span class="keyword">let</span> p <span class="keyword">in</span> blogObj)&#123;</div><div class="line">  <span class="keyword">if</span>(blogObj[p].title === <span class="string">'redux'</span>)&#123;</div><div class="line">    blog = blogObj[p]</div><div class="line">    <span class="keyword">break</span></div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//  blogArr 时间复杂度 O(n)</span></div><div class="line">blog = blogArr.find(<span class="function"><span class="params">blog</span> =&gt;</span> blog.title === <span class="string">'redux'</span>)</div><div class="line"></div><div class="line"><span class="comment">// 遍历所有 blog</span></div><div class="line"><span class="comment">// blogObj 时间复杂度 O(n)</span></div><div class="line"><span class="keyword">for</span>(<span class="keyword">let</span> p <span class="keyword">in</span> blogObj)&#123;</div><div class="line">  ...</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// blogArr 时间复杂度 O(n)</span></div><div class="line">blogArr.forEach(<span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125;)</div></pre></td></tr></table></figure>
+<p>观察上述代码可知：</p>
+<ul>
+<li>如果需要根据某个字段的值来获取具体的数据，并且该字段又是源数据集的某个属性（blogObj 的 key，blogArr 的 indice），那么搜索普通对象和数组的时间复杂度均为 <code>O(1)</code></li>
+<li>如果需要根据某个字段的值来获取具体的数据，但是该字段不是源数据集的属性（ title )，那么搜索普通对象和数组的时间复杂度均为 <code>O(n)</code></li>
+<li>如果需要遍历源数据集，普通对象和数组花费的时间复杂度均为 <code>O(n)</code></li>
+<li>从普通对象和数组本身数据结构看，普通对象更像一张<strong>哈希表</strong>，通过某个属性的具体值去计算对应的数据；而数组更像一张<strong>顺序表</strong>，在遍历的过程中，可以保证数据访问的顺序性</li>
+<li>es6 后，数组有很多自带的操作方法如 <code>forEach</code>，<code>map</code>，<code>reduce</code> 等可以提升开发者的编码效率，而普通对象如果想使用这些方法，则必须通过 <code>Object.keys</code>，<code>Object.values</code> 等方法来转换成数组，这么做的副作用是会增加时间复杂度，并且无法保证对象属性遍历的顺序性</li>
+</ul>
+<p>以上结论比较粗浅，不一定适用于其他复杂的数据结构，针对以上博客文章的数据集，如果业务中既有遍历文章数组的要求，又有需要通过文章 id 快速访问对应文章信息的需求，更好的数据结构如下：<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> blogData = &#123;</div><div class="line">  idList: [<span class="string">'xxx'</span>,<span class="string">'yyy'</span>],</div><div class="line">  data: &#123;</div><div class="line">    <span class="string">'xxx'</span>:&#123;</div><div class="line">      title: <span class="string">'扁平化'</span>,</div><div class="line">      content: <span class="string">'xxx'</span></div><div class="line">    &#125;,</div><div class="line">    <span class="string">'yyy'</span>:&#123;</div><div class="line">      title: <span class="string">'redux'</span>,</div><div class="line">      content: <span class="string">'yyy'</span></div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>更复杂的例子，参考 <a href="https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape" target="_blank" rel="external">Normalized State</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+     
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <span id="article-nav-newer" class="article-nav-link-wrap newer"></span>
+  
+  
+    <a href="/2018/07/08/React 性能优化浅谈/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">React 性能优化浅谈</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+        <ul class="footer-links">
+          
+            <li><a href="/archives/"><span class="fa fa-book"></span></a></li>
+          
+            <li><a href="https://github.com"><span class="fa fa-globe"></span></a></li>
+          
+            <li><a href="https://twitter.com/"><span class="fa fa-twitter"></span></a></li>
+          
+            <li><a href="https://github.com/"><span class="fa fa-github-alt"></span></a></li>
+          
+            <li><a href="https://www.youtube.com/"><span class="fa fa-youtube-play"></span></a></li>
+          
+            <li><a href="https://stackoverflow.com/"><span class="fa fa-stack-overflow"></span></a></li>
+          
+            <li><a href="https://plus.google.com/"><span class="fa fa-google-plus"></span></a></li>
+          
+            <li><a href="/atom.xml"><span class="fa fa-rss"></span></a></li>
+          
+        </ul>
+	    
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>You only get one shot, do not miss your chance to blow!</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/typing.js"></script>
+<!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>
