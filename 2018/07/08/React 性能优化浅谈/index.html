@@ -5,21 +5,22 @@
   
   <title>React 性能优化浅谈 | ChongYa&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言组件生命周期：  组件 render 分为两类：  初始 render：生成虚拟 dom 节点 -&amp;gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间 更新 render：生成虚拟 dom 节点 -&amp;gt; diff 比较新老节点不同 -&amp;gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间">
+  <meta name="description" content="前言组件生命周期：    组件 render 分为两类：  初始 render：生成虚拟 dom 节点 -&amp;gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间 更新 render：生成虚拟 dom 节点 -&amp;gt; diff 比较新老节点不同 -&amp;gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间">
 <meta name="keywords" content="React">
 <meta property="og:type" content="article">
 <meta property="og:title" content="React 性能优化浅谈">
-<meta property="og:url" content="http://yoursite.com/2018/07/08/React 性能优化浅谈/React 性能优化浅谈/index.html">
+<meta property="og:url" content="http://yoursite.com/2018/07/08/React 性能优化浅谈/index.html">
 <meta property="og:site_name" content="ChongYa&#39;s Blog">
-<meta property="og:description" content="前言组件生命周期：  组件 render 分为两类：  初始 render：生成虚拟 dom 节点 -&amp;gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间 更新 render：生成虚拟 dom 节点 -&amp;gt; diff 比较新老节点不同 -&amp;gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间">
-<meta property="og:image" content="http://yoursite.com/2018/07/08/React%20性能优化浅谈/React%20性能优化浅谈/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg">
-<meta property="og:image" content="http://yoursite.com/2018/07/08/React%20性能优化浅谈/React%20性能优化浅谈/resources/3D7E9A21A8A47C5C55CC344A4DA64B69.jpg">
-<meta property="og:image" content="http://yoursite.com/2018/07/08/React%20性能优化浅谈/React%20性能优化浅谈/resources/45183716F4D29C0F8EAF85BCB4F57A36.jpg">
-<meta property="og:updated_time" content="2018-07-12T12:36:51.000Z">
+<meta property="og:description" content="前言组件生命周期：    组件 render 分为两类：  初始 render：生成虚拟 dom 节点 -&amp;gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间 更新 render：生成虚拟 dom 节点 -&amp;gt; diff 比较新老节点不同 -&amp;gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间">
+<meta property="og:image" content="http://yoursite.com/2018/07/08/React%20性能优化浅谈/images/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/08/React%20性能优化浅谈/images/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/08/React%20性能优化浅谈/resources/3D7E9A21A8A47C5C55CC344A4DA64B69.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/08/React%20性能优化浅谈/resources/45183716F4D29C0F8EAF85BCB4F57A36.jpg">
+<meta property="og:updated_time" content="2018-07-12T13:08:25.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="React 性能优化浅谈">
-<meta name="twitter:description" content="前言组件生命周期：  组件 render 分为两类：  初始 render：生成虚拟 dom 节点 -&amp;gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间 更新 render：生成虚拟 dom 节点 -&amp;gt; diff 比较新老节点不同 -&amp;gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间">
-<meta name="twitter:image" content="http://yoursite.com/2018/07/08/React%20性能优化浅谈/React%20性能优化浅谈/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg">
+<meta name="twitter:description" content="前言组件生命周期：    组件 render 分为两类：  初始 render：生成虚拟 dom 节点 -&amp;gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间 更新 render：生成虚拟 dom 节点 -&amp;gt; diff 比较新老节点不同 -&amp;gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间">
+<meta name="twitter:image" content="http://yoursite.com/2018/07/08/React%20性能优化浅谈/images/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg">
   
   
     <link rel="icon" href="/favicon.ico">
@@ -37,7 +38,7 @@
     
   
       <div id="container" class="container">
-        <article id="post-React 性能优化浅谈/React 性能优化浅谈" class="article article-type-post" itemscope itemprop="blogPost">
+        <article id="post-React 性能优化浅谈" class="article article-type-post" itemscope itemprop="blogPost">
   <header id="header" class="header">
   <nav id="main-nav" class="main-nav">
     
@@ -67,7 +68,7 @@
     <ul class="article-meta">
       <li>
         <span class="label">Published Date:</span>
-        <a href="/2018/07/08/React 性能优化浅谈/React 性能优化浅谈/" class="article-date">
+        <a href="/2018/07/08/React 性能优化浅谈/" class="article-date">
   <time datetime="2018-07-07T16:00:00.000Z" itemprop="datePublished">2018-07-08</time>
 </a>
 
@@ -87,7 +88,9 @@
     <div class="article-entry typo" itemprop="articleBody">
       
         <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>组件生命周期：</p>
-<p><img src="resources/B41440E3444967549A35E4FBA0FD0EAB.jpg" alt=""></p>
+<p><img src="/2018/07/08/React 性能优化浅谈/images/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg" alt=""></p>
+<p><img src="/2018/07/08/React 性能优化浅谈/images/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg"></p>
+
 <p>组件 render 分为两类：</p>
 <ul>
 <li><strong>初始 render</strong>：生成虚拟 dom 节点 -&gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间</li>
@@ -116,7 +119,7 @@
 <li>…</li>
 </ul>
 <h3 id="避免无用-rerender"><a href="#避免无用-rerender" class="headerlink" title="避免无用 rerender"></a>避免无用 rerender</h3><p>查看组件是否执行 render 的简易工具， 推荐 chrome 浏览器的 <a href="https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=zh-CN" target="_blank" rel="external">React</a> 插件，使用方式（仅限开发环境）：打开 chrome 控制面板，点击 React 插件并勾选 Highlight Updates 即可，然后在与 React 页面交互过程中，浏览器会自动高亮处于 render 生命周期的组件</p>
-<p><img src="resources/3D7E9A21A8A47C5C55CC344A4DA64B69.jpg" alt=""></p>
+<p><img src="/2018/07/08/React 性能优化浅谈/resources/3D7E9A21A8A47C5C55CC344A4DA64B69.jpg" alt=""></p>
 <p>触发组件 rerender 的条件（<code>shouldComponentUpdate</code> 以下简称 SCU）：</p>
 <ul>
 <li>props change &amp;&amp; SCU return true</li>
@@ -154,7 +157,7 @@
 <p>更好的做法是通过 css 方式隐藏和显示节点，而不是真正的移除或添加节点。</p>
 </li>
 </ul>
-<p><img src="resources/45183716F4D29C0F8EAF85BCB4F57A36.jpg" alt=""></p>
+<p><img src="/2018/07/08/React 性能优化浅谈/resources/45183716F4D29C0F8EAF85BCB4F57A36.jpg" alt=""></p>
 <ul>
 <li><p>同层级节点使用 key 复用老节点</p>
 <p>考虑如下节点树操作，在原有节点 A B 之前插入一个 C 节点，diff 算法会按照自上而下的顺序依次比较 C A B  三个节点，针对是否使用 key 标识节点，diff 算法给出不同策略：</p>

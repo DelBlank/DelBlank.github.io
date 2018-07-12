@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>React 性能优化浅谈 | ChongYa&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言组件生命周期：  组件 render 分为两类：  初始 render：生成虚拟 dom 节点 -&amp;gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间 更新 render：生成虚拟 dom 节点 -&amp;gt; diff 比较新老节点不同 -&amp;gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间">
+<meta name="keywords" content="React">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React 性能优化浅谈">
+<meta property="og:url" content="http://yoursite.com/2018/07/08/React 性能优化/index.html">
+<meta property="og:site_name" content="ChongYa&#39;s Blog">
+<meta property="og:description" content="前言组件生命周期：  组件 render 分为两类：  初始 render：生成虚拟 dom 节点 -&amp;gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间 更新 render：生成虚拟 dom 节点 -&amp;gt; diff 比较新老节点不同 -&amp;gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间">
+<meta property="og:image" content="http://yoursite.com/2018/images/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/08/React%20性能优化/resources/3D7E9A21A8A47C5C55CC344A4DA64B69.jpg">
+<meta property="og:image" content="http://yoursite.com/2018/07/08/React%20性能优化/resources/45183716F4D29C0F8EAF85BCB4F57A36.jpg">
+<meta property="og:updated_time" content="2018-07-12T13:25:21.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React 性能优化浅谈">
+<meta name="twitter:description" content="前言组件生命周期：  组件 render 分为两类：  初始 render：生成虚拟 dom 节点 -&amp;gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间 更新 render：生成虚拟 dom 节点 -&amp;gt; diff 比较新老节点不同 -&amp;gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间">
+<meta name="twitter:image" content="http://yoursite.com/2018/images/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/typing.css">
+  <link rel="stylesheet" href="/css/donate.css">
+  
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  
+</head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-React 性能优化" class="article article-type-post" itemscope itemprop="blogPost">
+  <header id="header" class="header">
+  <nav id="main-nav" class="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      React 性能优化浅谈
+    </h1>
+  
+
+      </header>
+    
+    <ul class="article-meta">
+      <li>
+        <span class="label">Published Date:</span>
+        <a href="/2018/07/08/React 性能优化/" class="article-date">
+  <time datetime="2018-07-07T16:00:00.000Z" itemprop="datePublished">2018-07-08</time>
+</a>
+
+      </li>
+      
+      
+        <li>
+          <span class="label">Tag:</span>
+          
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/React/">React</a></li></ul>
+
+
+        </li>
+      
+      <hr/>
+    </ul>
+    <div class="article-entry typo" itemprop="articleBody">
+      
+        <h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>组件生命周期：</p>
+<p><img src="/2018/07/08/React 性能优化/../../../images/resources/B41440E3444967549A35E4FBA0FD0EAB.jpg" alt=""></p>
+<p>组件 render 分为两类：</p>
+<ul>
+<li><strong>初始 render</strong>：生成虚拟 dom 节点 -&gt; 挂载节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间  + 挂载节点时间</li>
+<li><strong>更新 render</strong>：生成虚拟 dom 节点 -&gt; diff 比较新老节点不同 -&gt; 更新节点耗时 = 业务逻辑计算时间 + 生成虚拟 dom 时间 + diff 比较时间 + 更新节点时间</li>
+</ul>
+<p>针对单个组件，优化的主要办法是<strong>避免重复执行 render 函数</strong> 与<strong>简化 render 内部计算</strong>。</p>
+<p>针对整个组件树，优化的主要办法是<strong>优化组件结构</strong>和<strong>简化组件操作</strong>，这么做的目的是为了避免组件无用的构造、挂载和更新，减少 diff 算法的计算成本。</p>
+<h3 id="简化-render-函数内部计算"><a href="#简化-render-函数内部计算" class="headerlink" title="简化 render 函数内部计算"></a>简化 render 函数内部计算</h3><p>render 函数内部难免会涉及到一些业务相关的计算，不同业务场景，代码逻辑需要表达的计算方式不同。对 render 本身无用和重复的计算，会对整个 render 过程造成性能浪费。</p>
+<p>render 中的业务代码计算优化方法与其他场景下业务代码计算优化方法并无差异，如遇到性能问题，以下有几点常用的 tips：</p>
+<ul>
+<li>不要在 render 函数中写与 render 无关的业务代码，比如：<ul>
+<li><code>setState</code></li>
+<li>异步请求</li>
+<li>内联函数的定义</li>
+<li>…</li>
+</ul>
+</li>
+<li>采用变量缓存的方法，避免在 render 函数中对某一变量进行重复计算，比如<ul>
+<li>对于大数组，避免重复读取数组的长度</li>
+<li>将不直接或间接依赖 props 和 state 的变量计算逻辑放到 render 之外</li>
+<li>…</li>
+</ul>
+</li>
+<li>降低循环遍历带来的时间复杂度，避免重复循环，尽量将能在同一次循环迭代中完成的计算逻辑放到一次迭代中</li>
+<li>延迟计算，很多时候由于条件判断的存在，某些计算的结果不一定会用上，建议将这部分计算过程放到真正需要它们的地方</li>
+<li>…</li>
+</ul>
+<h3 id="避免无用-rerender"><a href="#避免无用-rerender" class="headerlink" title="避免无用 rerender"></a>避免无用 rerender</h3><p>查看组件是否执行 render 的简易工具， 推荐 chrome 浏览器的 <a href="https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=zh-CN" target="_blank" rel="external">React</a> 插件，使用方式（仅限开发环境）：打开 chrome 控制面板，点击 React 插件并勾选 Highlight Updates 即可，然后在与 React 页面交互过程中，浏览器会自动高亮处于 render 生命周期的组件</p>
+<p><img src="/2018/07/08/React 性能优化/resources/3D7E9A21A8A47C5C55CC344A4DA64B69.jpg" alt=""></p>
+<p>触发组件 rerender 的条件（<code>shouldComponentUpdate</code> 以下简称 SCU）：</p>
+<ul>
+<li>props change &amp;&amp; SCU return true</li>
+<li>call setState &amp;&amp; SCU return true</li>
+<li>call forceUpdate</li>
+<li>parent rerender &amp;&amp; child SCU return true =&gt; child rerender</li>
+</ul>
+<p>根据以上条件，分享几点 tips 帮助大家合理控制组件是否执行 rerender：</p>
+<p><strong>1. 当需要 <code>setState</code> 时再使用 <code>setState</code></strong></p>
+<p>关于 <code>setState</code> 函数，官网有这么一段话：</p>
+<blockquote>
+<p>setState() will always lead to a re-render unless shouldComponentUpdate() returns false</p>
+</blockquote>
+<p><code>setState</code> 函数设计初衷是为了让组件可以自由地设置内部状态，在 SCU 返回 true 的情况下，即使 <code>setState</code> 前后组件的状态未发生变更，<code>setState</code> 也会导致组件的 rerender，因此，请在需要更新组件状态的时候，再使用 <code>setState</code> 函数。</p>
+<p><strong>2. 控制 SCU 返回值</strong></p>
+<p>forceUpdate 函数会直接跳过 SCU，强迫组件 rerender，这种情况下，我们无法阻止组件 rerender，而另外三种条件均与 SCU 有关，只有在组件 SCU 返回 true 的时候，组件才能 rerender，因此，我们可以通过控制 SCU 的返回值来避免无用 rerender，即令 <code>shouldComponentUpdate(nextProps, nextState)</code> 在特定条件下返回 false。</p>
+<p><strong>3. 使用 <code>PureComponent</code></strong><br>react15.3 中引入了一个新类 <a href="https://reactjs.org/docs/react-api.html#reactpurecomponent" target="_blank" rel="external"><code>PureComponent</code></a>，它在 <code>Component</code> 类基础上，会自动根据 props 与 nextProps 和 state 与 nextState 的每个属性值是否相等来计算 SCU 的返回值，如果要使用 <code>PureComponent</code>，有几点 tips：</p>
+<ul>
+<li>由于 <code>PureComponent</code> 在比较 props 与 nextProps 和 state 与 nextState 每个属性值时采用的是<strong>浅比较</strong>的做法，因此对于复杂引用类型的属性值，<code>PureComponent</code> 无法做到更深层次的比较判断</li>
+<li>由于 <code>PureComponent</code> 会对 props 与 nextProps 和 state 与 nextState <strong>所有属性值</strong>进行比较，出于性能考虑，应该避免 props 对象和 state 对象体积过于庞大</li>
+</ul>
+<h3 id="优化组件树和简化组件操作"><a href="#优化组件树和简化组件操作" class="headerlink" title="优化组件树和简化组件操作"></a>优化组件树和简化组件操作</h3><p>react virtul dom 和 diff 算法旨在有效地找出 UI 差异的最小集合，并把这种差异集合更新到真实节点上，diff 算法遵循两个原则：</p>
+<ul>
+<li>不同类型的元素会产生不同的树</li>
+<li>同一层级的一组节点，它们可以通过唯一 id(key) 进行区分</li>
+</ul>
+<p>尽管 diff 算法十分高效，但它依然是一项耗时的工作，以下有几个 tips 可以帮助减少 diff 算法带来的开销：</p>
+<ul>
+<li><p><strong>避免无用的 dom 嵌套，尽量保持树的扁平</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// bad</span></div><div class="line">render() &#123;</div><div class="line">  <span class="keyword">return</span> (</div><div class="line">    &lt;div&gt;</div><div class="line">      &lt;Tab&gt;</div><div class="line">        &lt;p&gt;错误做法：这种情况通常不需要在 Tab 外面再包一层 div&lt;<span class="regexp">/p&gt;</span></div><div class="line"><span class="regexp">      &lt;/</span>Tab&gt;</div><div class="line">    &lt;<span class="regexp">/div&gt;</span></div><div class="line"><span class="regexp">  )</span></div><div class="line"><span class="regexp">&#125;</span></div><div class="line"><span class="regexp">/</span><span class="regexp">/ bad </span></div><div class="line"><span class="regexp">render() &#123;</span></div><div class="line"><span class="regexp">  return (</span></div><div class="line"><span class="regexp">    &lt;div&gt;</span></div><div class="line"><span class="regexp">      &lt;div&gt;</span></div><div class="line"><span class="regexp">        &lt;div&gt;</span></div><div class="line"><span class="regexp">          &lt;p&gt;错误做法：嵌套太多层 div &lt;/</span>p&gt;</div><div class="line">        &lt;<span class="regexp">/div&gt;</span></div><div class="line"><span class="regexp">      &lt;/</span>div&gt;</div><div class="line">    &lt;<span class="regexp">/div&gt;</span></div><div class="line"><span class="regexp">  )</span></div><div class="line"><span class="regexp">&#125;</span></div></pre></td></tr></table></figure>
+</li>
+<li><p><strong>尽量避免节点的跨层级移动</strong></p>
+<p>如下图，将 A 节点及其子树移动到 D 节点下面，由于 react 只会简单的考虑同层级节点的位置变换，而对于不同层级的节点，只有创建和删除操作。</p>
+<p>这种情况下，diff 算法执行步骤为：create new A -&gt; create new B -&gt; create new C -&gt; delete old A</p>
+<p>更好的做法是通过 css 方式隐藏和显示节点，而不是真正的移除或添加节点。</p>
+</li>
+</ul>
+<p><img src="/2018/07/08/React 性能优化/resources/45183716F4D29C0F8EAF85BCB4F57A36.jpg" alt=""></p>
+<ul>
+<li><p>同层级节点使用 key 复用老节点</p>
+<p>考虑如下节点树操作，在原有节点 A B 之前插入一个 C 节点，diff 算法会按照自上而下的顺序依次比较 C A B  三个节点，针对是否使用 key 标识节点，diff 算法给出不同策略：</p>
+<ul>
+<li>未使用 key 之前：delete old A -&gt; insert new C -&gt; delete old B -&gt; insert new A -&gt; insert new B</li>
+<li>使用 key 之后：insert new C</li>
+</ul>
+<p>未使用 key 之前，在头部插入 C 节点的时候，原有的 A B 节点被删除了，取而代之的是新 A B 节点，节点一多，在性能上就会有一定程度损耗，我们希望的是将原有 A B 节点保留下来，直接一步到位在头部插入 C 节点即可，react 提供了这种保留老节点的能力，即使用 key 去标识这些节点。</p>
+</li>
+</ul>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!-- 未使用 key --&gt;</span></div><div class="line"><span class="comment">&lt;!-- 插入 C 前 --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span>&gt;</span>A<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span>&gt;</span>B<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div><div class="line"><span class="comment">&lt;!-- 插入 C 后 --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span>&gt;</span>C<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span>&gt;</span>A<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span>&gt;</span>B<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">&lt;!-- 使用 key --&gt;</span></div><div class="line"><span class="comment">&lt;!-- 插入 C 前 --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'1'</span>&gt;</span>A<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'2'</span>&gt;</span>B<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div><div class="line"></div><div class="line"><span class="comment">&lt;!-- 在头部插入 C 后 --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'3'</span>&gt;</span>C<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'1'</span>&gt;</span>A<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'2'</span>&gt;</span>B<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div></pre></td></tr></table></figure>
+<ul>
+<li><p>同层级节点使用唯一 key 值</p>
+<p>很多时候，我们会通过数组类型的数据来创建一组同层级的节点，在创建过程中采用数组下标来设置节点 key 值，当遇到需要对数组重新排序（比如插入和删除数据）的情况时，数组下标与组件 key 值的对应关系可能会被打乱，导致部分原有节点无法复用，这些节点就会经历先删除再重建的耗时操作。</p>
+<p>建议使用<strong>稳定</strong>，<strong>可预测</strong>且<strong>唯一</strong>的字段来标识 key 值，通常这种字段就是用来唯一标识数组元素的字段（比如元素 id），如果无法找到这类字段，可以考虑使用 <a href="https://www.npmjs.com/package/uuid" target="_blank" rel="external">uuid</a>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 采用数组下标设置 key 值</span></div><div class="line">&lt;ul&gt;</div><div class="line">  &#123;</div><div class="line">    items.map(<span class="function">(<span class="params">&#123;id, name&#125;,i</span>) =&gt;</span> &lt;li key=&#123;i&#125;&gt;&#123;name&#125;&lt;<span class="regexp">/li&gt;)</span></div><div class="line"><span class="regexp">  &#125;</span></div><div class="line"><span class="regexp">&lt;/u</span>l&gt;</div><div class="line"></div><div class="line"><span class="comment">// 采用唯一 id 设置 key 值</span></div><div class="line">&lt;ul&gt;</div><div class="line">  &#123;</div><div class="line">    items.map(<span class="function">(<span class="params">&#123;id, name&#125;,i</span>) =&gt;</span> &lt;li key=&#123;id&#125;&gt;&#123;name&#125;&lt;<span class="regexp">/li&gt;)</span></div><div class="line"><span class="regexp">  &#125;</span></div><div class="line"><span class="regexp">&lt;/u</span>l&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>避免将同层级的尾部元素移到头部</p>
+<p>考虑如下节点树操作，将同层级最后的 D 节点移动到头部。</p>
+<p>移动前节点相对位置顺序为：A - B - C - D</p>
+<p>移动后节点相对位置顺序为：D - A - B - C</p>
+<p>移动前后，D 节点相对于 A B C 节点位置顺序发生了改变，最省时的做法是直接将 D 节点移动到头部即可，但 diff 算法对于这种相对位置发生改变场景的策略是：<strong>以相对靠后的元素为参照，移动靠前的元素</strong>。</p>
+<p>基于以上策略，diff 算法会移动 A B C 到 D 之后，而不是移动 D 到 A B C 之前，因此，若 D 之前的元素较多，需要移动的元素也越多，性能开销也就越大。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!-- 移动前 --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'a'</span>&gt;</span>A<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'b'</span>&gt;</span>B<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'c'</span>&gt;</span>C<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'d'</span>&gt;</span>D<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div><div class="line"></div><div class="line"><span class="comment">&lt;!-- 移动后 --&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'d'</span>&gt;</span>D<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'a'</span>&gt;</span>A<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'b'</span>&gt;</span>B<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">  <span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">'c'</span>&gt;</span>C<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="使用无状态组件"><a href="#使用无状态组件" class="headerlink" title="使用无状态组件"></a>使用无状态组件</h3><p>不同于有状态组件，无状态组件不会被实例化，没有标准的组件生命周期，占用的内存更少，整体渲染性能更优。关于无状态组件和有状态组件的区别，可参考如下表格：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left"></th>
+<th style="text-align:left">无状态组件</th>
+<th style="text-align:left">有状态组件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">实例</td>
+<td style="text-align:left">没有 this 对象，无法访问 this.ref，this.state …</td>
+<td style="text-align:left">可以被实例化，有 this 对象</td>
+</tr>
+<tr>
+<td style="text-align:left">生命周期</td>
+<td style="text-align:left">无法操控组件生命周期</td>
+<td style="text-align:left">自由操控组件生命周期</td>
+</tr>
+<tr>
+<td style="text-align:left">状态</td>
+<td style="text-align:left">不需要维护自身状态</td>
+<td style="text-align:left">需要保存和维护自身状态</td>
+</tr>
+<tr>
+<td style="text-align:left">创建方式</td>
+<td style="text-align:left">函数</td>
+<td style="text-align:left">类</td>
+</tr>
+</tbody>
+</table>
+<h3 id="使用-react-production-版本发布引用"><a href="#使用-react-production-版本发布引用" class="headerlink" title="使用 react production 版本发布引用"></a>使用 react production 版本发布引用</h3><p>有统计表明，开发环境下 react 组件渲染性能会比生产环境下 react 组件渲染性能慢 2-8 倍，并且 react production 版本体积比 development 版本要小很多，建议在发布应用的时候使用 production 版本，使用方法：</p>
+<ul>
+<li><p>直接在 html 头部引入后缀为 <code>.production.min.js</code> 的 react 库，比如：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://unpkg.com/react@16/umd/react.production.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">src</span>=<span class="string">"https://unpkg.com/react-dom@16/umd/react-dom.production.min.js"</span>&gt;</span><span class="undefined"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>webpack 方式：在配置文件中加入</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">new</span> webpack.DefinePlugin(&#123;</div><div class="line">  <span class="string">'process.env.NODE_ENV'</span>: <span class="built_in">JSON</span>.stringify(<span class="string">'production'</span>)</div><div class="line">&#125;),</div><div class="line"><span class="keyword">new</span> webpack.optimize.UglifyJsPlugin()</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<h3 id="结合-Redux-的性能优化"><a href="#结合-Redux-的性能优化" class="headerlink" title="结合 Redux 的性能优化"></a>结合 Redux 的性能优化</h3><p>由于每次组件的 rerender 都会触发 <code>connect</code> 函数的重新计算，因此简化 <code>connect</code> 函数计算十分重要：</p>
+<ul>
+<li>采用 <a href="https://github.com/reduxjs/reselect" target="_blank" rel="external">reselect</a> 缓存先前的计算结果</li>
+<li>使用 <a href="https://facebook.github.io/immutable-js/" target="_blank" rel="external">immutable</a> 来包裹复杂引用类型，数据读写与一致性判断快捷、安全</li>
+<li>如果使用 immutable 类型对象，切忌在 <code>connect</code> 函数中调用 <code>toJS</code> 这类耗时的函数</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+     
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <span id="article-nav-newer" class="article-nav-link-wrap newer"></span>
+  
+  
+    <a href="/2018/02/08/GRASP 模式/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">GRASP 模式</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+        <ul class="footer-links">
+          
+            <li><a href="/archives/"><span class="fa fa-book"></span></a></li>
+          
+            <li><a href="https://github.com"><span class="fa fa-globe"></span></a></li>
+          
+            <li><a href="https://twitter.com/"><span class="fa fa-twitter"></span></a></li>
+          
+            <li><a href="https://github.com/"><span class="fa fa-github-alt"></span></a></li>
+          
+            <li><a href="https://www.youtube.com/"><span class="fa fa-youtube-play"></span></a></li>
+          
+            <li><a href="https://stackoverflow.com/"><span class="fa fa-stack-overflow"></span></a></li>
+          
+            <li><a href="https://plus.google.com/"><span class="fa fa-google-plus"></span></a></li>
+          
+            <li><a href="/atom.xml"><span class="fa fa-rss"></span></a></li>
+          
+        </ul>
+	    
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>You only get one shot, do not miss your chance to blow!</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/typing.js"></script>
+<!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>
