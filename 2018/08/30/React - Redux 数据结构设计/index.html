@@ -12,7 +12,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/08/30/React - Redux 数据结构设计/index.html">
 <meta property="og:site_name" content="ChongYa&#39;s Blog">
 <meta property="og:description" content="什么数据适合放在 store 中？我们可以通过数据持久度和数据消费程度来区分数据类型：  数据持久度  快速变更型 中等持续型 长远稳定型  快速变更型：这类数据往往代表着短时间内快速变更，比如文本框内容可能随着用户输入持续变化，或者快速拖动变更位置等，这类数据更加适合维护在 state 中。 中等持续性：当用户浏览或者使用应用时，在刷新页面之前数据保持相对稳定，比如 ajax 获取数据，编辑 f">
-<meta property="og:updated_time" content="2018-09-01T06:28:28.000Z">
+<meta property="og:updated_time" content="2018-09-01T06:29:44.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="React-Redux 数据结构设计">
 <meta name="twitter:description" content="什么数据适合放在 store 中？我们可以通过数据持久度和数据消费程度来区分数据类型：  数据持久度  快速变更型 中等持续型 长远稳定型  快速变更型：这类数据往往代表着短时间内快速变更，比如文本框内容可能随着用户输入持续变化，或者快速拖动变更位置等，这类数据更加适合维护在 state 中。 中等持续性：当用户浏览或者使用应用时，在刷新页面之前数据保持相对稳定，比如 ajax 获取数据，编辑 f">
@@ -106,7 +106,7 @@
 <p>综上所述，不建议将所有状态都托管于 <code>Redux store</code>。</p>
 <h3 id="数据不可变-immutable-or-immer"><a href="#数据不可变-immutable-or-immer" class="headerlink" title="数据不可变 (immutable or immer)"></a>数据不可变 (<code>immutable</code> or <code>immer</code>)</h3><p>不可变数据对于 <code>React</code> 组件的意义不再赘述。这里想谈下两个优秀的库 <a href="https://facebook.github.io/immutable-js/" target="_blank" rel="external"><code>immutable</code></a> 和 <a href="https://github.com/mweststrate/immer" target="_blank" rel="external"><code>immer</code></a>。</p>
 <p><code>immutable</code> 对象与原生的 js 对象操作有很大异同，加上繁琐的 fromJS 和 toJS 操作，会在一定程度上提升开发成本，并且 <code>immutable</code> 对项目侵入程度较大，会增加项目后期的维护成本。</p>
-<p>可以考虑支持原生 js 对象操作的 <code>immer</code> 库代替 <code>immutable</code>。</p>
+<p>可以考虑用支持原生 js 对象操作的 <code>immer</code> 库代替 <code>immutable</code>。</p>
 <h3 id="数据扁平化"><a href="#数据扁平化" class="headerlink" title="数据扁平化"></a><a href="https://delblank.github.io/2018/07/08/Redux%20%E6%95%B0%E6%8D%AE%E6%89%81%E5%B9%B3%E5%8C%96/" target="_blank" rel="external">数据扁平化</a></h3><h3 id="业务数据的原子性与原始性"><a href="#业务数据的原子性与原始性" class="headerlink" title="业务数据的原子性与原始性"></a>业务数据的原子性与原始性</h3><ul>
 <li><strong>原子性</strong><br>保证业务数据的<strong>原子性</strong>是指不要将业务数据与 ui 数据或者其他业务数据（不同接口返回的数据）<strong>耦合</strong>，即不要将 ui 状态与其他业务数据掺杂进某个业务数据中。由于不同业务数据之间、业务数据与 ui 状态数据之间拥有不同的<strong>生命周期</strong>，如果混合使用，会给开发带来额外的开发和维护成本，举两个例子：</li>
 </ul>
@@ -149,9 +149,9 @@
     <span id="article-nav-newer" class="article-nav-link-wrap newer"></span>
   
   
-    <a href="/2018/07/08/React 性能优化浅谈/" id="article-nav-older" class="article-nav-link-wrap older">
+    <a href="/2018/08/20/业务系统是否该冻结 npm 依赖？/" id="article-nav-older" class="article-nav-link-wrap older">
       <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">React 性能优化浅谈</div>
+      <div class="article-nav-title">业务系统是否该冻结 npm 依赖？</div>
     </a>
   
 </nav>
