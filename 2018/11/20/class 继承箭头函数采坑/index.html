@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>class 继承箭头函数采坑 | ChongYa&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="抛出问题下述代码中，Child 类继承自 Parent 类，我们希望 Child 类中 af 方法能够覆盖 Parent 类中箭头函数 af 方法。1234567891011121314151617// 父类class Parent &amp;#123;  af = () =&amp;gt; &amp;#123;    console.log(&apos;parent af&apos;)  &amp;#125;&amp;#125;// 子类class Ch">
+<meta name="keywords" content="javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="class 继承箭头函数采坑">
+<meta property="og:url" content="http://yoursite.com/2018/11/20/class 继承箭头函数采坑/index.html">
+<meta property="og:site_name" content="ChongYa&#39;s Blog">
+<meta property="og:description" content="抛出问题下述代码中，Child 类继承自 Parent 类，我们希望 Child 类中 af 方法能够覆盖 Parent 类中箭头函数 af 方法。1234567891011121314151617// 父类class Parent &amp;#123;  af = () =&amp;gt; &amp;#123;    console.log(&apos;parent af&apos;)  &amp;#125;&amp;#125;// 子类class Ch">
+<meta property="og:updated_time" content="2018-12-29T07:12:10.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="class 继承箭头函数采坑">
+<meta name="twitter:description" content="抛出问题下述代码中，Child 类继承自 Parent 类，我们希望 Child 类中 af 方法能够覆盖 Parent 类中箭头函数 af 方法。1234567891011121314151617// 父类class Parent &amp;#123;  af = () =&amp;gt; &amp;#123;    console.log(&apos;parent af&apos;)  &amp;#125;&amp;#125;// 子类class Ch">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/typing.css">
+  <link rel="stylesheet" href="/css/donate.css">
+  
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  
+</head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-class 继承箭头函数采坑" class="article article-type-post" itemscope itemprop="blogPost">
+  <header id="header" class="header">
+  <nav id="main-nav" class="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      class 继承箭头函数采坑
+    </h1>
+  
+
+      </header>
+    
+    <ul class="article-meta">
+      <li>
+        <span class="label">Published Date:</span>
+        <a href="/2018/11/20/class 继承箭头函数采坑/" class="article-date">
+  <time datetime="2018-11-19T16:00:00.000Z" itemprop="datePublished">2018-11-20</time>
+</a>
+
+      </li>
+      
+      
+        <li>
+          <span class="label">Tag:</span>
+          
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
+
+
+        </li>
+      
+      <hr/>
+    </ul>
+    <div class="article-entry typo" itemprop="articleBody">
+      
+        <h2 id="抛出问题"><a href="#抛出问题" class="headerlink" title="抛出问题"></a>抛出问题</h2><p>下述代码中，<code>Child</code> 类继承自 <code>Parent</code> 类，我们希望 <code>Child</code> 类中 <code>af</code> 方法能够覆盖 <code>Parent</code> 类中<strong>箭头函数</strong> <code>af</code> 方法。<br><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 父类</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Parent</span> </span>&#123;</div><div class="line">  af = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'parent af'</span>)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 子类</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span> <span class="keyword">extends</span> <span class="title">Parent</span> </span>&#123;</div><div class="line">  af () &#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'child af'</span>)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">const</span> child = <span class="keyword">new</span> Child()</div><div class="line"></div><div class="line">child.af()</div></pre></td></tr></table></figure></p>
+<p>上述代码调用 <code>child.af()</code> 后会打印出 ‘parent af’ 而非期望的 ‘child af’。为什么？</p>
+<h2 id="ES6-class-gt-ES5-function"><a href="#ES6-class-gt-ES5-function" class="headerlink" title="ES6 class  -&gt; ES5 function"></a>ES6 class  -&gt; ES5 function</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Parent</span>() </span>&#123;</div><div class="line">  f() &#123;<span class="built_in">console</span>.log(<span class="string">'parent f'</span>)&#125;</div><div class="line">  </div><div class="line">  af = <span class="function"><span class="params">()</span> =&gt;</span> &#123;<span class="built_in">console</span>.log(<span class="string">'parent af'</span>)&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>上述代码通过 <code>babel</code> 转义后变为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Parent = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">  <span class="function"><span class="keyword">function</span> <span class="title">Parent</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    _classCallCheck(<span class="keyword">this</span>, Parent);</div><div class="line"></div><div class="line">    <span class="comment">// 将 af 绑定到 Parent 的 this</span></div><div class="line">    <span class="keyword">this</span>.af = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">      <span class="built_in">console</span>.log(<span class="string">'parent af'</span>);</div><div class="line">    &#125;;</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="comment">// 将 f 绑定到 Parent 的 prototype</span></div><div class="line">  _createClass(Parent, [&#123;</div><div class="line">    key: <span class="string">'f'</span>,</div><div class="line">    value: <span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params"></span>) </span>&#123;<span class="built_in">console</span>.log(<span class="string">'parent f'</span>)&#125;</div><div class="line">  &#125;]);</div><div class="line"></div><div class="line">  <span class="keyword">return</span> Parent;</div><div class="line">&#125;()</div></pre></td></tr></table></figure>
+<p>从上述代码可以看出，<code>f</code> 通过 <code>_createClass</code> 绑定到 <code>Parent</code> 的 <code>prototype</code> 上，而<strong>箭头函数</strong> <code>af</code> 则是直接绑定到 <code>Parent</code> 的 <code>this</code> 上，因此上述代码等价于：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Parent = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  <span class="keyword">this</span>.af = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'parent af'</span>);</div><div class="line">  &#125;;</div><div class="line">&#125;</div><div class="line"></div><div class="line">Parent.prototype.f = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'parent f'</span>)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h2 id="寄生组合式继承"><a href="#寄生组合式继承" class="headerlink" title="寄生组合式继承"></a>寄生组合式继承</h2><p>回顾下经典的<strong>寄生组合式继承</strong>，通过 <code>inherit</code> 继承的类其原型链为：</p>
+<p><code>child._proto_ =&gt; Child.prototype</code><br><code>Child.prototype._proto_ =&gt; F.prototype = Parent.prototype</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 构建对象</span></div><div class="line"><span class="keyword">const</span> createObj = <span class="function"><span class="params">obj</span> =&gt;</span> &#123;</div><div class="line">  <span class="function"><span class="keyword">function</span> <span class="title">F</span>(<span class="params"></span>)</span>&#123;&#125;</div><div class="line">  </div><div class="line">  F.prototype = obj</div><div class="line">  </div><div class="line">  <span class="keyword">return</span> <span class="keyword">new</span> F()</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 继承方法</span></div><div class="line"><span class="keyword">const</span> inherit = <span class="function">(<span class="params">Child, Parent</span>) =&gt;</span> &#123;</div><div class="line">  <span class="keyword">const</span> p = createObj(Parent.prototype)</div><div class="line">  p.constructor = Child</div><div class="line">  Child.prototype = p</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Parent</span> </span>&#123;&#125;</div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span> </span>&#123;&#125;</div><div class="line"></div><div class="line">inherit(Child, Parent)</div><div class="line"></div><div class="line"><span class="keyword">var</span> child = <span class="keyword">new</span> Child()</div></pre></td></tr></table></figure>
+<h2 id="ES6-class-extends-继承"><a href="#ES6-class-extends-继承" class="headerlink" title="ES6 class extends 继承"></a>ES6 class extends 继承</h2><p>事实上，<code>ES6</code> 中的 <code>class extends</code> 继承方式原理参照的就是<strong>寄生组合式继承</strong>，将文章最开始的 <code>Child</code> 类转义成 <code>ES5</code> 就变成了：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Child = <span class="function"><span class="keyword">function</span> (<span class="params">Parent</span>) </span>&#123;</div><div class="line">  <span class="comment">// 继承 Parent</span></div><div class="line">  _inherits(Child, Parent);</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">function</span> <span class="title">Child</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    _classCallCheck(<span class="keyword">this</span>, Child);</div><div class="line"></div><div class="line">    <span class="keyword">return</span> _possibleConstructorReturn(<span class="keyword">this</span>, (Child.__proto__ || <span class="built_in">Object</span>.getPrototypeOf(Child)).apply(<span class="keyword">this</span>, <span class="built_in">arguments</span>));</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="comment">// 将 af 绑定到 Child 的 prototype</span></div><div class="line">  _createClass(Child, [&#123;</div><div class="line">    key: <span class="string">'af'</span>,</div><div class="line">    value: <span class="function"><span class="keyword">function</span> <span class="title">af</span>(<span class="params"></span>) </span>&#123;&#125;</div><div class="line">  &#125;]);</div><div class="line"></div><div class="line">  <span class="keyword">return</span> Child;</div><div class="line">&#125;(Parent);</div></pre></td></tr></table></figure>
+<p>上述代码等价于：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> Child = <span class="function"><span class="keyword">function</span>(<span class="params"></span>)</span>&#123;&#125;</div><div class="line"></div><div class="line">Child.prototype.af = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;<span class="built_in">console</span>.log(<span class="string">'child af'</span>)&#125;</div><div class="line"></div><div class="line">inherit(Child, Parent)</div></pre></td></tr></table></figure>
+<p>根据继承原理，<code>Child</code> 会继承 <code>Parent</code> 的 <code>this</code> 属性，因此实例 <code>child</code> 内部含有从<br><code>Parent</code> 中继承下来的 <code>this.af</code> 方法，会屏蔽 <code>Child.prototype.af</code> 方法，所以文章最开头的代码 <code>child.af()</code> 会打印出 <code>parent af</code> 而不是 <code>child af</code>。</p>
+<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>如果父类中定义了箭头函数属性，子类中的同名函数欲覆盖它，则子类中同名函数也应该定义为箭头函数。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// ES6</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span> <span class="keyword">extends</span> <span class="title">Parent</span> </span>&#123;</div><div class="line">  af = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'child af'</span>)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// ES5</span></div><div class="line"><span class="keyword">var</span> Child = <span class="function"><span class="keyword">function</span> (<span class="params">_Parent</span>) </span>&#123;</div><div class="line">  _inherits(Child, _Parent);</div><div class="line"></div><div class="line">  <span class="function"><span class="keyword">function</span> <span class="title">Child</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> _ref;</div><div class="line"></div><div class="line">    <span class="keyword">var</span> _temp, _this, _ret;</div><div class="line"></div><div class="line">    _classCallCheck(<span class="keyword">this</span>, Child);</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> _len = <span class="built_in">arguments</span>.length, args = <span class="built_in">Array</span>(_len), _key = <span class="number">0</span>; _key &lt; _len; _key++) &#123;</div><div class="line">      args[_key] = <span class="built_in">arguments</span>[_key];</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 覆盖父类的方法</span></div><div class="line">    <span class="keyword">return</span> _ret = (_temp = (_this = _possibleConstructorReturn(<span class="keyword">this</span>, (_ref = Child.__proto__ || <span class="built_in">Object</span>.getPrototypeOf(Child)).call.apply(_ref, [<span class="keyword">this</span>].concat(args))), _this), _this.af = <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line">      <span class="built_in">console</span>.log(<span class="string">'child af'</span>);</div><div class="line">    &#125;, _temp), _possibleConstructorReturn(_this, _ret);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  <span class="keyword">return</span> Child;</div><div class="line">&#125;(Parent);</div></pre></td></tr></table></figure>
+<p>另外由于箭头函数 <code>af</code> 是直接绑定在父类函数上的，因此子类中无法通过 <code>super.af()</code> 的方式调用他，因为 <code>super === Child.prototype</code>。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+     
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <span id="article-nav-newer" class="article-nav-link-wrap newer"></span>
+  
+  
+    <a href="/2018/10/12/MVVM 三种实现/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">MVVM 三种实现方式</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+        <ul class="footer-links">
+          
+            <li><a href="/archives/"><span class="fa fa-book"></span></a></li>
+          
+            <li><a href="https://github.com"><span class="fa fa-globe"></span></a></li>
+          
+            <li><a href="https://twitter.com/"><span class="fa fa-twitter"></span></a></li>
+          
+            <li><a href="https://github.com/"><span class="fa fa-github-alt"></span></a></li>
+          
+            <li><a href="https://www.youtube.com/"><span class="fa fa-youtube-play"></span></a></li>
+          
+            <li><a href="https://stackoverflow.com/"><span class="fa fa-stack-overflow"></span></a></li>
+          
+            <li><a href="https://plus.google.com/"><span class="fa fa-google-plus"></span></a></li>
+          
+            <li><a href="/atom.xml"><span class="fa fa-rss"></span></a></li>
+          
+        </ul>
+	    
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>You only get one shot, do not miss your chance to blow!</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/typing.js"></script>
+<!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>
