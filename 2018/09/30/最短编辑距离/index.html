@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>动态规划求解最短编辑距离 | ChongYa&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="在研究 React list diff 算法的过程中，发现了一个有趣的问题，即给定任意两个字符串 s1 与 s2，求将 s1 通过以下操作转换成 s2 的最少步骤 （每执行一次操作，s1 到 s2 的编辑距离加 1）。  插入一个字符 删除一个字符 替换一个字符  具体举例，现有 s1=&amp;#39;abc&amp;#39; 和 s2=&amp;#39;cbef&amp;#39;，求 s1 到 s2 的最短编辑距离 dis（">
+<meta name="keywords" content="算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="动态规划求解最短编辑距离">
+<meta property="og:url" content="http://yoursite.com/2018/09/30/最短编辑距离/index.html">
+<meta property="og:site_name" content="ChongYa&#39;s Blog">
+<meta property="og:description" content="在研究 React list diff 算法的过程中，发现了一个有趣的问题，即给定任意两个字符串 s1 与 s2，求将 s1 通过以下操作转换成 s2 的最少步骤 （每执行一次操作，s1 到 s2 的编辑距离加 1）。  插入一个字符 删除一个字符 替换一个字符  具体举例，现有 s1=&amp;#39;abc&amp;#39; 和 s2=&amp;#39;cbef&amp;#39;，求 s1 到 s2 的最短编辑距离 dis（">
+<meta property="og:updated_time" content="2018-12-29T06:54:28.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="动态规划求解最短编辑距离">
+<meta name="twitter:description" content="在研究 React list diff 算法的过程中，发现了一个有趣的问题，即给定任意两个字符串 s1 与 s2，求将 s1 通过以下操作转换成 s2 的最少步骤 （每执行一次操作，s1 到 s2 的编辑距离加 1）。  插入一个字符 删除一个字符 替换一个字符  具体举例，现有 s1=&amp;#39;abc&amp;#39; 和 s2=&amp;#39;cbef&amp;#39;，求 s1 到 s2 的最短编辑距离 dis（">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/typing.css">
+  <link rel="stylesheet" href="/css/donate.css">
+  
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  
+</head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-最短编辑距离" class="article article-type-post" itemscope itemprop="blogPost">
+  <header id="header" class="header">
+  <nav id="main-nav" class="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      动态规划求解最短编辑距离
+    </h1>
+  
+
+      </header>
+    
+    <ul class="article-meta">
+      <li>
+        <span class="label">Published Date:</span>
+        <a href="/2018/09/30/最短编辑距离/" class="article-date">
+  <time datetime="2018-09-29T16:00:00.000Z" itemprop="datePublished">2018-09-30</time>
+</a>
+
+      </li>
+      
+      
+        <li>
+          <span class="label">Tag:</span>
+          
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/算法/">算法</a></li></ul>
+
+
+        </li>
+      
+      <hr/>
+    </ul>
+    <div class="article-entry typo" itemprop="articleBody">
+      
+        <p>在研究 <code>React list diff</code> 算法的过程中，发现了一个有趣的问题，即<strong>给定任意两个字符串 s1 与 s2，求将 s1 通过以下操作转换成 s2 的最少步骤</strong> （每执行一次操作，s1 到 s2 的编辑距离加 1）。</p>
+<ul>
+<li>插入一个字符</li>
+<li>删除一个字符</li>
+<li>替换一个字符</li>
+</ul>
+<p>具体举例，现有 <code>s1=&#39;abc&#39;</code> 和 <code>s2=&#39;cbef&#39;</code>，求 s1 到 s2 的最短编辑距离 dis（记 dis[m][n] 为 s1&lt;[1]..[m]&gt; 到 s2&lt;[1]…[n]&gt;的最短编辑距离）。下表展示了 s1 到 s2 不同长度子字符串的最短编辑距离：</p>
+<table>
+<thead>
+<tr>
+<th>s1\s2</th>
+<th>0(‘’)</th>
+<th>1(‘c’)</th>
+<th>2(‘cb’)</th>
+<th>3(‘cbe’)</th>
+<th>4(‘cbef’)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0(‘’)</td>
+<td>dis[0][0]=0</td>
+<td>dis[0][1]=1</td>
+<td>dis[0][2]=2</td>
+<td>dis[0][3]=3</td>
+<td>dis[0][4]=4</td>
+</tr>
+<tr>
+<td>1(‘a’)</td>
+<td>dis[1][0]=1</td>
+<td>dis[1][1]=1</td>
+<td>dis[1][2]=2</td>
+<td>dis[1][3]=3</td>
+<td>dis[1][4]=4</td>
+</tr>
+<tr>
+<td>2(‘ab’)</td>
+<td>dis[2][0]=2</td>
+<td>dis[2][1]=2</td>
+<td>dis[2][2]=1</td>
+<td>dis[2][3]=2</td>
+<td>dis[2][4]=3</td>
+</tr>
+<tr>
+<td>3(‘abc’)</td>
+<td>dis[3][0]=3</td>
+<td>dis[3][1]=2</td>
+<td>dis[3][2]=2</td>
+<td>dis[3][3]=2</td>
+<td>dis[3][4]=3</td>
+</tr>
+</tbody>
+</table>
+<p>从上表可以看出两个规律：</p>
+<ul>
+<li>若其中一个字符串为空，则最短编辑距离即为另一个字符串的长度，即 dis[m][0]=m 或 d[0][n]=n</li>
+<li><p>若已知 dis[m-1][n]，dis[m][n-1] 与 dis[m-1][n-1]</p>
+<ul>
+<li>s1[m] === s2[n]，则 dis[m][n] = dis[m-1][n-1]</li>
+<li>s1[m] !== s2[n]，则 dis[m][n] = min(dis[m-1][n], dis[m][n-1], dis[m-1][n-1]) + 1。</li>
+</ul>
+<p>比如 ‘abc’ -&gt; ‘cac’，由于最后一个字符 ‘c’ 相同，则 ‘abc’ -&gt; ‘cac’ 等价于 ‘ab’ -&gt; ‘ca’，对于 ‘ab’ -&gt; ‘ca’，最后一个字符并不相同，那么 ‘ab’ -&gt; ‘ca’  可以通过三种途径达到：</p>
+<ul>
+<li>先从 ‘ab’ 中<strong>删除</strong> ‘b’，然后让 ‘a’ -&gt; ‘ca’</li>
+<li>先从 ‘ca’ 中<strong>删除</strong> ‘a’，然后让 ‘ab’ -&gt; ‘c’</li>
+<li>先让 ‘a’  -&gt; ‘c’，然后将 ‘ab’ 中的 ‘b’ 替换成 ‘ca’ 中的 ‘a’</li>
+</ul>
+<p>综上可知，无论是 ‘a’ -&gt; ‘ca’，’ab’ -&gt; ‘c’ 还是 ‘a’ -&gt; ‘c’ 都需要经过额外的一步编辑，因此只要在求得三种方式最短编辑距离的最小值之后再加 1 即可。</p>
+</li>
+</ul>
+<p>贴上源码：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line">  <span class="comment">/**</span></div><div class="line"><span class="comment"> * 动态规划算法</span></div><div class="line"><span class="comment"> * @param &#123;string&#125; a</span></div><div class="line"><span class="comment"> * @param &#123;string&#125; b</span></div><div class="line"><span class="comment"> * @returns &#123;number&#125; 从 a → b 的最小编辑距离</span></div><div class="line"><span class="comment"> */</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">dynamicPlanning</span>(<span class="params">a, b</span>) </span>&#123;</div><div class="line">    <span class="keyword">let</span> lenA = a.length;</div><div class="line">    <span class="keyword">let</span> lenB = b.length;</div><div class="line">    <span class="keyword">let</span> d = [];</div><div class="line">    d[<span class="number">0</span>] = [];</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> j = <span class="number">0</span>; j &lt;= lenB; j++) &#123;</div><div class="line">        d[<span class="number">0</span>].push(j);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i &lt;= lenA; i++) &#123;</div><div class="line">        <span class="keyword">if</span> (d[i]) &#123;</div><div class="line">            d[i][<span class="number">0</span>] = i;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            d[i] = [];</div><div class="line">            d[i][<span class="number">0</span>] = i;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">1</span>; i &lt;= lenA; i++) &#123;</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> j = <span class="number">1</span>; j &lt;= lenB; j++) &#123;</div><div class="line">            <span class="keyword">if</span> (a[i - <span class="number">1</span>] === b[j - <span class="number">1</span>]) &#123;</div><div class="line">                d[i][j] = d[i - <span class="number">1</span>][j - <span class="number">1</span>];</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                <span class="keyword">let</span> m1 = d[i - <span class="number">1</span>][j] + <span class="number">1</span>;</div><div class="line">                <span class="keyword">let</span> m2 = d[i][j - <span class="number">1</span>] + <span class="number">1</span>;</div><div class="line">                <span class="keyword">let</span> m3 = d[i - <span class="number">1</span>][j - <span class="number">1</span>] + <span class="number">1</span>;</div><div class="line">                d[i][j] = <span class="built_in">Math</span>.min(m1, m2, m3);</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">return</span> d[lenA][lenB];</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+     
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="/2018/12/29/MVVM 三种实现/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/08/30/React - Redux 数据结构设计/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">React-Redux 数据结构设计</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+        <ul class="footer-links">
+          
+            <li><a href="/archives/"><span class="fa fa-book"></span></a></li>
+          
+            <li><a href="https://github.com"><span class="fa fa-globe"></span></a></li>
+          
+            <li><a href="https://twitter.com/"><span class="fa fa-twitter"></span></a></li>
+          
+            <li><a href="https://github.com/"><span class="fa fa-github-alt"></span></a></li>
+          
+            <li><a href="https://www.youtube.com/"><span class="fa fa-youtube-play"></span></a></li>
+          
+            <li><a href="https://stackoverflow.com/"><span class="fa fa-stack-overflow"></span></a></li>
+          
+            <li><a href="https://plus.google.com/"><span class="fa fa-google-plus"></span></a></li>
+          
+            <li><a href="/atom.xml"><span class="fa fa-rss"></span></a></li>
+          
+        </ul>
+	    
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>You only get one shot, do not miss your chance to blow!</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/typing.js"></script>
+<!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>
