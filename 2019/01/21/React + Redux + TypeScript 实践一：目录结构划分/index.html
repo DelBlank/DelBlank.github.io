@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>React + Redux + TypeScript 实践一：目录结构划分 | ChongYa&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近自己在写项目的时候，尝试了一把 TypeScript，发现很有意思，相比于 Javascript 这种弱类型语言，Typescript 作为其扩展，在类型校验和代码设计模式上更加有优势，作为 React + Redux + TypeScript 的实践系列第一篇，先简单地介绍下我对前端目录结构的划分（不是最优划分，仅供参考）：   client/common 12345client├── co">
+<meta name="keywords" content="typescript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React + Redux + TypeScript 实践一：目录结构划分">
+<meta property="og:url" content="http://yoursite.com/2019/01/21/React + Redux + TypeScript 实践一：目录结构划分/index.html">
+<meta property="og:site_name" content="ChongYa&#39;s Blog">
+<meta property="og:description" content="最近自己在写项目的时候，尝试了一把 TypeScript，发现很有意思，相比于 Javascript 这种弱类型语言，Typescript 作为其扩展，在类型校验和代码设计模式上更加有优势，作为 React + Redux + TypeScript 的实践系列第一篇，先简单地介绍下我对前端目录结构的划分（不是最优划分，仅供参考）：   client/common 12345client├── co">
+<meta property="og:image" content="http://yoursite.com/images/resources/E113DEE31C006564B7A28357602121D5.png">
+<meta property="og:updated_time" content="2019-01-21T11:34:46.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React + Redux + TypeScript 实践一：目录结构划分">
+<meta name="twitter:description" content="最近自己在写项目的时候，尝试了一把 TypeScript，发现很有意思，相比于 Javascript 这种弱类型语言，Typescript 作为其扩展，在类型校验和代码设计模式上更加有优势，作为 React + Redux + TypeScript 的实践系列第一篇，先简单地介绍下我对前端目录结构的划分（不是最优划分，仅供参考）：   client/common 12345client├── co">
+<meta name="twitter:image" content="http://yoursite.com/images/resources/E113DEE31C006564B7A28357602121D5.png">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/typing.css">
+  <link rel="stylesheet" href="/css/donate.css">
+  
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  
+</head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-React + Redux + TypeScript 实践一：目录结构划分" class="article article-type-post" itemscope itemprop="blogPost">
+  <header id="header" class="header">
+  <nav id="main-nav" class="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      React + Redux + TypeScript 实践一：目录结构划分
+    </h1>
+  
+
+      </header>
+    
+    <ul class="article-meta">
+      <li>
+        <span class="label">Published Date:</span>
+        <a href="/2019/01/21/React + Redux + TypeScript 实践一：目录结构划分/" class="article-date">
+  <time datetime="2019-01-20T16:00:00.000Z" itemprop="datePublished">2019-01-21</time>
+</a>
+
+      </li>
+      
+      
+        <li>
+          <span class="label">Tag:</span>
+          
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/typescript/">typescript</a></li></ul>
+
+
+        </li>
+      
+      <hr/>
+    </ul>
+    <div class="article-entry typo" itemprop="articleBody">
+      
+        <p>最近自己在写项目的时候，尝试了一把 <code>TypeScript</code>，发现很有意思，相比于 <code>Javascript</code> 这种弱类型语言，<code>Typescript</code> 作为其扩展，在<strong>类型校验</strong>和<strong>代码设计模式</strong>上更加有优势，作为 <code>React + Redux + TypeScript</code> 的实践系列第一篇，先简单地介绍下我对前端目录结构的划分（不是最优划分，仅供参考）：</p>
+<p><img src="/2019/01/21/React + Redux + TypeScript 实践一：目录结构划分/../../../../images/resources/E113DEE31C006564B7A28357602121D5.png" alt="ts-dict.png"></p>
+<ul>
+<li><p><code>client/common</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">client</div><div class="line">├── common</div><div class="line">│	├── config.ts(全局配置)</div><div class="line">│	└── utils.ts(通用方法)</div><div class="line">│	└── ...</div></pre></td></tr></table></figure>
+<p>该文件夹主要存放一些全局通用的<strong>方法</strong>和<strong>配置</strong>，比如 <code>config.ts</code> 可以存放全局需要的配置参数，<code>utils</code> 则可以直接编写一些全局通用函数。</p>
+</li>
+<li><p><code>client/components</code></p>
+<p>没啥好说的，存放全局通用 <code>React</code> 组件。</p>
+</li>
+<li><p><code>client/pages</code></p>
+<p>平时以开发单页应用为主，<code>client/pages</code> 用来存放不同<br><code>url</code> 对应的页面组件。</p>
+</li>
+<li><p><code>client/public</code></p>
+<p>存放应用的静态资源文件。</p>
+</li>
+<li><p><code>client/router</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">client</div><div class="line">├── router</div><div class="line">│	├── index.tsx</div></pre></td></tr></table></figure>
+<p><code>client/router/index.tsx</code> 用于设置整个应用的路由系统，采用的技术栈是 <code>react-router-dom</code></p>
+</li>
+<li><p><code>client/store</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">client</div><div class="line">├── store</div><div class="line">│	├── global-reducer(通用 reducer)</div><div class="line">│	│	├── user.ts</div><div class="line">│	│	└── ...</div><div class="line">│	└── create-immutable-reducer.ts(创建不可变 reducer)</div><div class="line">│	└── create-store.ts(创建 redux store)</div><div class="line">│	└── root-reducer.ts(每个页面依赖的 reducer 集合)</div></pre></td></tr></table></figure>
+<p><code>client/store</code> 主要用于存放 <code>Redux store</code> 相关的文件，<code>Redux</code> 这块的架构我采用的 <code>Ducks</code> 结构，希望能尽量少的切换上下文，关于 <code>Redux</code> 的设计会放到后续系列着重讲解</p>
+</li>
+<li><p><code>client/services</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">client</div><div class="line">├── services</div><div class="line">│	├── axios(axios 二次封装)</div><div class="line">│	│	├── ...</div><div class="line">│	└── index.ts(axios 请求函数集合)</div></pre></td></tr></table></figure>
+<p><code>client/services</code> 用来充当前端 <code>client</code> 层和后端 <code>server</code> 层的<strong>中间层</strong>，前端所有发起的请求均通过 <code>services/index.ts</code> 中定义的请求函数，关于如何在 <code>TypeScript</code> 的基础上通过 <code>axios</code> 库定义前端需要的请求函数，会在后续文章说明。</p>
+</li>
+<li><p><code>client/types</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">client</div><div class="line">├── types</div><div class="line">│	├── event.d.ts(事件类型)</div><div class="line">│	├── error.d.ts(异常错误类型)</div><div class="line">│	└── model.d.ts(实体数据类型)</div><div class="line">│	└── http-api.d.ts(请求与响应类型)</div><div class="line">│	└── store.d.ts(redux store相关类型)</div><div class="line">│	└── index.d.ts(上述类型集合输出)</div></pre></td></tr></table></figure>
+<p><code>client/types</code> 用来存放 <code>client</code> 层相关的类型声明文件，每个文件的内容会随着后续文章的重点而展开。</p>
+</li>
+<li><p><code>client/app.tsx</code> 与 <code>client/app.less</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">client</div><div class="line">├── app.less(应用全局样式)</div><div class="line">└── app.tsx(应用入口组件)</div><div class="line">└── ...</div></pre></td></tr></table></figure>
+<p>除了上述的几个重要目录，<code>client</code> 目录下还有一些其他与这些重要目录平级的文件，其中作为入口文件的 <code>app.tsx</code> 会通过 <code>reference</code> 方式一次性地导入所有样式供整个 <code>client</code> 层使用</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 应用入口文件</span></div><div class="line"><span class="comment">/// &lt;reference path="./types/index.d.ts" /&gt;</span></div><div class="line"><span class="keyword">import</span> * <span class="keyword">as</span> React <span class="keyword">from</span> <span class="string">'react'</span></div><div class="line"><span class="keyword">import</span> * <span class="keyword">as</span> ReactDOM <span class="keyword">from</span> <span class="string">'react-dom'</span></div><div class="line"><span class="keyword">import</span> &#123; Provider &#125; <span class="keyword">from</span> <span class="string">'react-redux'</span></div><div class="line"><span class="keyword">import</span> &#123; Router, Route &#125; <span class="keyword">from</span> <span class="string">'react-router-dom'</span></div><div class="line"><span class="keyword">import</span> &#123;LocaleProvider&#125; <span class="keyword">from</span> <span class="string">'antd'</span></div><div class="line"><span class="keyword">import</span> zhCN <span class="keyword">from</span> <span class="string">'antd/lib/locale-provider/zh_CN'</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> createStore <span class="keyword">from</span> <span class="string">'./store/create-store'</span></div><div class="line"><span class="keyword">import</span> CoreRouter <span class="keyword">from</span> <span class="string">'./router'</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> <span class="string">'./app.less'</span></div><div class="line"></div><div class="line"><span class="keyword">const</span> w = <span class="built_in">window</span> <span class="keyword">as</span> <span class="built_in">any</span></div><div class="line"><span class="keyword">const</span> store = createStore(w.__INITIAL_STATE__)</div><div class="line"></div><div class="line">ReactDOM.render(</div><div class="line">  &lt;LocaleProvider key=<span class="string">"provider"</span> locale=&#123;zhCN&#125;&gt;</div><div class="line">    &lt;Provider store=&#123;store&#125;&gt;</div><div class="line">      &lt;Router history=&#123;history&#125;&gt;</div><div class="line">        &lt;Route path=<span class="string">"/"</span> component=&#123;CoreRouter&#125; /&gt;</div><div class="line">      &lt;<span class="regexp">/Router&gt;</span></div><div class="line"><span class="regexp">    &lt;/</span>Provider&gt;</div><div class="line">  &lt;<span class="regexp">/LocaleProvider&gt;,</span></div><div class="line"><span class="regexp">  document.getElementById('root') as HTMLElement</span></div><div class="line"><span class="regexp">)</span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+     
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <a href="/2019/01/21/React + Redux + TypeScript 实践三：Redux 设计/" id="article-nav-newer" class="article-nav-link-wrap newer">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          React + Redux + TypeScript 实践三：Redux 设计
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2019/01/21/React + Redux + TypeScript 实践二：基于 axios 的 services/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">React + Redux + TypeScript 实践二：基于 axios 的 services</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+        <ul class="footer-links">
+          
+            <li><a href="/archives/"><span class="fa fa-book"></span></a></li>
+          
+            <li><a href="https://github.com"><span class="fa fa-globe"></span></a></li>
+          
+            <li><a href="https://twitter.com/"><span class="fa fa-twitter"></span></a></li>
+          
+            <li><a href="https://github.com/"><span class="fa fa-github-alt"></span></a></li>
+          
+            <li><a href="https://www.youtube.com/"><span class="fa fa-youtube-play"></span></a></li>
+          
+            <li><a href="https://stackoverflow.com/"><span class="fa fa-stack-overflow"></span></a></li>
+          
+            <li><a href="https://plus.google.com/"><span class="fa fa-google-plus"></span></a></li>
+          
+            <li><a href="/atom.xml"><span class="fa fa-rss"></span></a></li>
+          
+        </ul>
+	    
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>You only get one shot, do not miss your chance to blow!</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/typing.js"></script>
+<!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>

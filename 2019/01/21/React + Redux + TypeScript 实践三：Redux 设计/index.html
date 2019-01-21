@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>React + Redux + TypeScript 实践三：Redux 设计 | ChongYa&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="本文将介绍如何把 Redux 中优秀的设计模式和 TypeScript 这门语言结合起来，全文会围绕 Redux store 设计、Redux reducer 设计、Redux action 的设计以及常用异步中间件(redux-thunk 和 redux-promise-middleware)的使用展开。 接着实践二讲，本文要实现的功能是，在页面加载完成之前，通过 Redux 请求 /user/">
+<meta name="keywords" content="typescript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React + Redux + TypeScript 实践三：Redux 设计">
+<meta property="og:url" content="http://yoursite.com/2019/01/21/React + Redux + TypeScript 实践三：Redux 设计/index.html">
+<meta property="og:site_name" content="ChongYa&#39;s Blog">
+<meta property="og:description" content="本文将介绍如何把 Redux 中优秀的设计模式和 TypeScript 这门语言结合起来，全文会围绕 Redux store 设计、Redux reducer 设计、Redux action 的设计以及常用异步中间件(redux-thunk 和 redux-promise-middleware)的使用展开。 接着实践二讲，本文要实现的功能是，在页面加载完成之前，通过 Redux 请求 /user/">
+<meta property="og:updated_time" content="2019-01-21T11:49:01.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React + Redux + TypeScript 实践三：Redux 设计">
+<meta name="twitter:description" content="本文将介绍如何把 Redux 中优秀的设计模式和 TypeScript 这门语言结合起来，全文会围绕 Redux store 设计、Redux reducer 设计、Redux action 的设计以及常用异步中间件(redux-thunk 和 redux-promise-middleware)的使用展开。 接着实践二讲，本文要实现的功能是，在页面加载完成之前，通过 Redux 请求 /user/">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/typing.css">
+  <link rel="stylesheet" href="/css/donate.css">
+  
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  
+</head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-React + Redux + TypeScript 实践三：Redux 设计" class="article article-type-post" itemscope itemprop="blogPost">
+  <header id="header" class="header">
+  <nav id="main-nav" class="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      React + Redux + TypeScript 实践三：Redux 设计
+    </h1>
+  
+
+      </header>
+    
+    <ul class="article-meta">
+      <li>
+        <span class="label">Published Date:</span>
+        <a href="/2019/01/21/React + Redux + TypeScript 实践三：Redux 设计/" class="article-date">
+  <time datetime="2019-01-20T16:00:00.000Z" itemprop="datePublished">2019-01-21</time>
+</a>
+
+      </li>
+      
+      
+        <li>
+          <span class="label">Tag:</span>
+          
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/typescript/">typescript</a></li></ul>
+
+
+        </li>
+      
+      <hr/>
+    </ul>
+    <div class="article-entry typo" itemprop="articleBody">
+      
+        <p>本文将介绍如何把 <code>Redux</code> 中优秀的设计模式和 <code>TypeScript</code> 这门语言结合起来，全文会围绕 <code>Redux store</code> 设计、<code>Redux reducer</code> 设计、<code>Redux action</code> 的设计以及常用异步中间件(<code>redux-thunk</code> 和 <code>redux-promise-middleware</code>)的使用展开。</p>
+<p>接着实践二讲，本文要实现的功能是，在页面加载完成之前，通过 <code>Redux</code> 请求 <code>/user/detail</code> 接口获取用户基本信息并把信息写入到对应的 <code>store</code> 中。</p>
+<p>页面组件 <code>User</code> 的代码如下：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/pages/user/index.tsx</span></div><div class="line"><span class="keyword">import</span> &#123;Spin, Input&#125;  <span class="keyword">from</span> <span class="string">'antd'</span></div><div class="line"></div><div class="line"><span class="comment">// User 组件</span></div><div class="line"><span class="keyword">class</span> User <span class="keyword">extends</span> React.Component &#123;</div><div class="line">  render() &#123;</div><div class="line">    ...</div><div class="line">    <span class="keyword">return</span> (</div><div class="line">      &lt;Spin spinning=&#123;ui.loading&#125;&gt;</div><div class="line">        &lt;strong&gt;用户姓名：&lt;<span class="regexp">/strong&gt;</span></div><div class="line"><span class="regexp">        &lt;Input value=&#123;user.name&#125; /</span>&gt;</div><div class="line">        </div><div class="line">         &lt;strong&gt;用户年龄：&lt;<span class="regexp">/strong&gt;</span></div><div class="line"><span class="regexp">         &lt;Input value=&#123;user.age&#125; /</span>&gt;</div><div class="line">        </div><div class="line">         &lt;strong&gt;所属部门：&lt;<span class="regexp">/strong&gt;</span></div><div class="line"><span class="regexp">         &lt;Input value=&#123;user.department&#125; /</span>&gt;</div><div class="line">      &lt;<span class="regexp">/Spin&gt;</span></div><div class="line"><span class="regexp">    )</span></div><div class="line"><span class="regexp">  &#125;</span></div><div class="line"><span class="regexp">&#125;</span></div></pre></td></tr></table></figure>
+<ul>
+<li><code>Redux store</code> 设计</li>
+</ul>
+<p>基于 <code>Ducks</code> 架构，我们会根据每个页面状态划分出一个独立的 <code>state</code>，将这些页面的 <code>state</code> 组合在一起形成一个完整的 <code>store</code> 状态树。以 <code>User</code> 页面为例，根据上述 <code>User</code> 页面组件的代码可以看出 <code>User</code> 组件依赖以下四个属性：</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>loading</td>
+<td>boolean</td>
+<td>页面是否处于加载</td>
+</tr>
+<tr>
+<td>name</td>
+<td>string</td>
+<td>用户姓名</td>
+</tr>
+<tr>
+<td>age</td>
+<td>string</td>
+<td>用户年龄</td>
+</tr>
+<tr>
+<td>department</td>
+<td>string</td>
+<td>用户所属部门</td>
+</tr>
+</tbody>
+</table>
+<p>  其中 <code>loading</code> 属于页面 <code>UI</code> 状态，<code>name</code>、<code>age</code> 和 <code>department</code> 属于请求 <code>/user/detail</code> 接口获取到的一部分数据，我们可以简单地把<strong>没有业务属性</strong>的 <code>UI</code> 状态划分为一类数据，其他数据再按照各自的业务属性划分成不同类：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/types/store.d.ts</span></div><div class="line"><span class="comment">// User 组件状态接口</span></div><div class="line"><span class="keyword">interface</span> IUserState &#123;</div><div class="line">  ui: &#123;</div><div class="line">    loading: <span class="built_in">boolean</span></div><div class="line">  &#125;</div><div class="line">  user: IUser | &#123;&#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// store 状态树接口</span></div><div class="line"><span class="keyword">interface</span> IStoreTree &#123;</div><div class="line">  user: IUserState</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 状态树任意属性类型</span></div><div class="line"><span class="keyword">type</span> IStoreNode = IStoreTree[keyof IStoreTree]</div></pre></td></tr></table></figure>
+<ul>
+<li><code>Redux action</code> 设计</li>
+</ul>
+<p>先看 <code>Redux</code> 本身对于 <code>action</code> 的接口定义：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 源码: https://github.com/reduxjs/redux/blob/master/index.d.ts</span></div><div class="line"><span class="comment">// action 接口</span></div><div class="line"><span class="keyword">interface</span> Action&lt;T = any&gt; &#123;</div><div class="line">  <span class="keyword">type</span>: T</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 任意 action 接口</span></div><div class="line"><span class="keyword">interface</span> AnyAction <span class="keyword">extends</span> Action &#123;</div><div class="line">  [extraProps: <span class="built_in">string</span>]: <span class="built_in">any</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>  <code>Redux action</code> 的原始接口定义很简单，必须要有一个任意类型的 <code>type</code> 属性，而其他属性可以让用户随意定制，在实际应用中，这种接口定义不够严格和规范，会出现各式各样的 <code>action</code>，因此，我们将采用 <a href="https://github.com/redux-utilities/flux-standard-action" target="_blank" rel="external"><code>Flux action</code></a> 标准来规范 <code>Redux action</code> 的使用。</p>
+<p>  <code>Flux action</code> 的属性有：</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>required</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>type</td>
+<td>string</td>
+<td>√</td>
+<td><code>action</code> 标识</td>
+</tr>
+<tr>
+<td>payload</td>
+<td>any</td>
+<td></td>
+<td><code>action</code> 数据载荷</td>
+</tr>
+<tr>
+<td>error</td>
+<td>any</td>
+<td></td>
+<td>标志 <code>action</code> 是否是异常的，如果为真，则 <code>payload</code> 应该为 <code>Error</code> 对象</td>
+</tr>
+<tr>
+<td>meta</td>
+<td>any</td>
+<td></td>
+<td><code>action</code> 中不属于 <code>payload</code> 的额外数据信息</td>
+</tr>
+</tbody>
+</table>
+<p>  根据 <code>Flux action</code> 的属性可以定义 <code>FluxAction</code> 接口：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/types/store.d.ts</span></div><div class="line"><span class="keyword">import</span> &#123;Action&#125; <span class="keyword">from</span> <span class="string">'redux'</span></div><div class="line"></div><div class="line"><span class="comment">// flux action 接口</span></div><div class="line"><span class="keyword">interface</span> FluxAction&lt;P = any, M = any&gt; <span class="keyword">extends</span> Action &#123;</div><div class="line">  <span class="keyword">type</span>: <span class="built_in">string</span></div><div class="line">  payload?: P</div><div class="line">  error?: <span class="built_in">any</span></div><div class="line">  meta?: M</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>  在 <code>Redux</code> 中，<code>action</code> 会由 <code>action creator</code> 函数生成，<code>Redux</code> 对于 <code>action creator</code> 的原始接口定义为：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 源码: https://github.com/reduxjs/redux/blob/master/index.d.ts</span></div><div class="line"><span class="comment">// action creator 接口</span></div><div class="line"><span class="keyword">interface</span> ActionCreator&lt;A&gt;&#123;</div><div class="line">  (...args: <span class="built_in">any</span>[]): A</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>  基于 <code>ActionCreator</code>，我们可以构造出专门生成 <code>FluxAction</code> 类型 <code>action</code> 的 <code>action creator</code>：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/types/store.d.ts</span></div><div class="line"><span class="keyword">import</span> &#123;ActionCreator&#125; <span class="keyword">from</span> <span class="string">'redux'</span></div><div class="line"><span class="comment">// flux action creator 接口</span></div><div class="line"><span class="keyword">type</span> FluxActionCreator&lt;P=<span class="built_in">any</span>, M=<span class="built_in">any</span>&gt; = ActionCreator&lt;FluxAction&lt;P,M&gt;&gt;</div></pre></td></tr></table></figure>
+<p>  假设我们现在需要切换 <code>User</code> 组件上的 <code>loading</code> 状态，要求通过 <code>action creator</code> 发出对应的 <code>FluxAction</code> 类型的 <code>action</code>，那么我们可以这么定义这个 <code>action creator</code>：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/pages/user/user.ts</span></div><div class="line"><span class="comment">// 切换 loading 状态</span></div><div class="line"><span class="keyword">const</span> toggleLoading: FluxActionCreator&lt;<span class="built_in">boolean</span>&gt; = <span class="function">(<span class="params">loading: <span class="built_in">boolean</span></span>) =&gt;</span> (&#123;</div><div class="line">  <span class="keyword">type</span>: <span class="string">'TOGGLE_LOADING'</span>,</div><div class="line">  payload: loading</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<p>  当然，<code>FluxActionCreator</code> 类型定义稍显复杂，而复杂的类型定义会带来一定的理解成本，因此，我们也可以将 <code>toggleLoading</code> 简单定义为：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/pages/user/user.ts</span></div><div class="line"><span class="keyword">const</span> toggleLoading = (loading: <span class="built_in">boolean</span>):FluxAction&lt;<span class="built_in">boolean</span>&gt; =&gt; (&#123;</div><div class="line">  <span class="keyword">type</span>: <span class="string">'TOGGLE_LOADING'</span>,</div><div class="line">  payload: loading</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<p>  再比如修改 <code>IUserState.user</code>：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/pages/user/user.ts</span></div><div class="line"><span class="keyword">const</span> updateUser = (user: IUser):FluxAction&lt;IUser&gt; =&gt; (&#123;</div><div class="line">  <span class="keyword">type</span>: <span class="string">'UPDATE_USER'</span>,</div><div class="line">  payload: user</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<ul>
+<li><code>Redux</code> 异步 <code>action</code> 设计</li>
+</ul>
+<p><code>Redux</code> 本身不支持异步 <code>action</code>，需要引入额外的中间件来支持，这里举两个常见的异步中间件 <code>redux-thunk</code> 和 <code>redux-promise-middleware</code>，我们将分别讲解如何通过这两个中间件从 <code>/user/detail</code> 接口获取用户基本信息。</p>
+<p><strong>I. <code>redux-thunk</code></strong></p>
+<p>通常情况下，<code>action creator</code> 函数会返回一个对象，而在引入 <code>redux-thunk</code> 中间件后，<code>action creator</code> 会返回一个函数，该函数参数如下表：</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dispatch</td>
+<td>ThunkDispatch</td>
+<td><code>action creator</code> 触发函数</td>
+</tr>
+<tr>
+<td>getState</td>
+<td>function(): any</td>
+<td>获取整个 <code>store tree</code> 函数</td>
+</tr>
+<tr>
+<td>extraArgument</td>
+<td>any</td>
+<td>额外的参数</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 源码: https://github.com/reduxjs/redux-thunk/blob/master/index.d.ts</span></div><div class="line"><span class="keyword">import</span> &#123; Middleware, Action, AnyAction &#125; <span class="keyword">from</span> <span class="string">"redux"</span>;</div><div class="line"></div><div class="line"><span class="keyword">export</span> <span class="keyword">interface</span> ThunkDispatch&lt;S, E, A <span class="keyword">extends</span> Action&gt; &#123;</div><div class="line">  &lt;R&gt;(thunkAction: ThunkAction&lt;R, S, E, A&gt;): R;</div><div class="line">  &lt;T <span class="keyword">extends</span> A&gt;(action: T): T;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="keyword">export</span> <span class="keyword">type</span> ThunkAction&lt;R, S, E, A <span class="keyword">extends</span> Action&gt; = (</div><div class="line">  dispatch: ThunkDispatch&lt;S, E, A&gt;,</div><div class="line">  getState: <span class="function"><span class="params">()</span> =&gt;</span> S,</div><div class="line">  extraArgument: E</div><div class="line">) =&gt; R;</div></pre></td></tr></table></figure>
+<p>基于以上源码，我们可以构造出 <code>FluxAction</code> 相关的 <code>ThunkDispatch</code> 和 <code>ThunkAction</code></p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/types/store.d.ts</span></div><div class="line"><span class="keyword">import</span> &#123;ThunkDispatch, ThunkAction&#125; <span class="keyword">from</span> <span class="string">'redux-thunk'</span></div><div class="line"></div><div class="line"><span class="comment">// FluxThunkDispatch 接口</span></div><div class="line"><span class="keyword">type</span> FluxThunkDispatch&lt;S, P, M=<span class="built_in">any</span>, E=<span class="built_in">any</span>&gt; = ThunkDispatch&lt;S, E, FluxAction&lt;P, M&gt;&gt;</div><div class="line">  </div><div class="line"><span class="comment">// FluxThunkAction 接口</span></div><div class="line"><span class="keyword">type</span> FluxThunkAction&lt;S, P, M=<span class="built_in">any</span>, R=<span class="built_in">any</span>, E=<span class="built_in">any</span>&gt; = ThunkAction&lt;R, S, E, FluxAction&lt;P, M&gt;&gt;</div></pre></td></tr></table></figure>
+<p>在 <code>FluxThunkDispatch</code> 和 <code>FluxThunkAction</code> 中，我们调整了泛型类型的定义顺序，并对 <code>M</code>、<code>R</code>、<code>E</code> 提供了默认的类型 <code>any</code>，这是因为在大多数情况下，我们更关心代表 <code>store tree</code> 类型的 <code>S</code> 和代表 <code>action payload</code> 类型的 <code>P</code>。来看个使用 <code>FluxThunkAction</code> 的例子：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> f: FluxThunkAction&lt;IStoreTree, <span class="built_in">boolean</span>&gt; = </div><div class="line">  (dispatch: FluxThunkDispatch&lt;IStoreTree, <span class="built_in">boolean</span>&gt;, getState: <span class="function"><span class="params">()</span> =&gt;</span> IStoreTree, extraArgument: <span class="built_in">any</span>) =&gt; &#123;&#125;</div></pre></td></tr></table></figure>
+<p>通常情况下，一个应用只会配一个 <code>store tree</code>，因此 <code>FluxThunkAction</code> 和 <code>FluxThunkDispatch</code> 可以简化为：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/types/store.d.ts</span></div><div class="line"><span class="comment">// 以 IStoreTree 为 S 的 FluxThunkDispatch 接口</span></div><div class="line"><span class="keyword">type</span> StoreFTD&lt;P, M=<span class="built_in">any</span>, E=<span class="built_in">any</span>&gt; =</div><div class="line">  FluxThunkDispatch&lt;IStoreTree, P, M, E&gt;</div><div class="line"></div><div class="line"><span class="comment">// 以 IStoreTree 为 S 的 FluxThunkAction 接口</span></div><div class="line"><span class="keyword">type</span> StoreFTA&lt;P, M=<span class="built_in">any</span>, R=<span class="built_in">any</span>, E=<span class="built_in">any</span>&gt; =</div><div class="line">  FluxThunkAction&lt;IStoreTree, P, M, R, E&gt;</div></pre></td></tr></table></figure>
+<p>上述例子就可以简化为：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> f: StoreFTA&lt;<span class="built_in">boolean</span>&gt; = </div><div class="line">  (dispatch: StoreFTD&lt;<span class="built_in">boolean</span>&gt;, getState: <span class="function"><span class="params">()</span> =&gt;</span> IStoreTree, extraArgument: <span class="built_in">any</span>) =&gt; &#123;&#125;</div></pre></td></tr></table></figure>
+<p>现在再看从 <code>/user/detail</code> 接口获取用户信息功能，要求服务端在响应过程中，前端要展示 <code>loading</code> 状态，等到服务端返回后前端再取消 <code>loading</code> 状态，通过 <code>redux-thunk</code> 可以这么实现 <code>action creator</code>：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/pages/user/user.ts</span></div><div class="line"><span class="keyword">import</span> &#123;getUserDetail <span class="keyword">as</span> _getUserDetail&#125; <span class="keyword">from</span> <span class="string">'services'</span></div><div class="line"><span class="comment">// 获取用户详情</span></div><div class="line"><span class="keyword">const</span> getUserDetail = <span class="function">(<span class="params">name: <span class="built_in">string</span></span>):<span class="params">StoreFTA</span>&lt;<span class="params">boolean</span> | <span class="params">IUser</span> | &#123;&#125;&gt; =&gt;</span> (dispatch: StoreFTD&lt;<span class="built_in">boolean</span> | IUser | &#123;&#125;&gt;) =&gt; &#123;</div><div class="line">  <span class="comment">// 显示 loading</span></div><div class="line">  dispatch(toggleLoading(<span class="literal">true</span>))</div><div class="line">  </div><div class="line">  <span class="comment">// 发起请求</span></div><div class="line">  _getUserDetail(&#123;name&#125;)</div><div class="line">  .then(<span class="function">(<span class="params">data: IUser</span>) =&gt;</span> &#123;</div><div class="line">    <span class="comment">// 请求成功，更改 user 并取消 loading 状态</span></div><div class="line">    dispatch(updateUser(data))</div><div class="line">    dispatch(toggleLoading(<span class="literal">false</span>))</div><div class="line">  &#125;)</div><div class="line">  .catch(<span class="function">(<span class="params">err: <span class="built_in">Error</span></span>) =&gt;</span> &#123;</div><div class="line">    <span class="built_in">console</span>.error(err.message)</div><div class="line">    <span class="comment">// 请求失败，更改 user 为空并取消 loading 状态</span></div><div class="line">    dispatch(updateUser(&#123;&#125;))</div><div class="line">    dispatch(toggleLoading(<span class="literal">false</span>))</div><div class="line">  &#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>II. <code>redux-promise-middleware</code></strong></p>
+<p><code>redux-thunk</code> 在 <code>action creator</code> 内部处理不同的异步状态，而 <code>redux-promise-middleware</code> 则把这些处理逻辑移至 <code>reducer</code> 中处理，<code>action creator</code> 应该尽量保持代码简洁，减少衍生计算逻辑，从这点看，<code>redux-promise-middleware</code> 要优于 <code>redux-thunk</code> 并且 <code>redux-promise-middleware</code> 对于 <code>Promise</code> 异步状态划分的更为清晰，代码可读性更强。</p>
+<p><code>redux-promise-middleware</code> 要求 <code>action payload</code> 类型为 <code>Promise</code> 类型或是包含以下两个属性的对象</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>promise</td>
+<td>Promise</td>
+<td>Promise 对象</td>
+</tr>
+<tr>
+<td>data</td>
+<td>any</td>
+<td>乐观更新的数据</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/types/store.d.ts</span></div><div class="line"><span class="comment">// Promise payload 类型</span></div><div class="line"><span class="keyword">type</span> PromisePayload&lt;P, T = <span class="built_in">any</span>&gt; = <span class="built_in">Promise</span>&lt;P&gt; | &#123;</div><div class="line">  promise: <span class="built_in">Promise</span>&lt;P&gt;</div><div class="line">  data: T</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>从 <code>/user/detail</code> 接口获取用户信息的 <code>action creator</code> 接口可以写成：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/pages/user/user.ts</span></div><div class="line"><span class="comment">// 获取用户详情</span></div><div class="line"><span class="keyword">const</span> getUserDetail = (name: <span class="built_in">string</span>): FluxAction&lt;PromisePayload&lt;IGetUserRes&gt;&gt; =&gt; (&#123;</div><div class="line">  <span class="keyword">type</span>: <span class="string">'GET_USER_DETAIL'</span>,</div><div class="line">  payload: _getUserDetail(&#123;name&#125;)</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<p>相比于 <code>redux-thunk</code>，<code>redux-promise-middleware</code> 的 <code>action creator</code> 代码要简洁很多。</p>
+<ul>
+<li><code>Redux reducer</code> 设计</li>
+</ul>
+<p>设计好 <code>Redux store</code> 后，还需要定义对应的 <code>Redux reducer</code> 来接收 <code>Redux action</code> 并对 <code>Redux store</code> 进行<strong>衍生计算</strong>。</p>
+<p>先看 <code>Redux</code> 对 <code>Reducer</code> 类型的定义：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 源码: https://github.com/reduxjs/redux/blob/master/index.d.ts</span></div><div class="line"><span class="comment">// reducer 类型</span></div><div class="line"><span class="keyword">export</span> <span class="keyword">type</span> Reducer&lt;S = <span class="built_in">any</span>, A <span class="keyword">extends</span> Action = AnyAction&gt; = (</div><div class="line">  state: S | <span class="literal">undefined</span>,</div><div class="line">  action: A</div><div class="line">) =&gt; S</div><div class="line"></div><div class="line"><span class="comment">// reducer 函数集合类型</span></div><div class="line"><span class="keyword">export</span> <span class="keyword">type</span> ReducersMapObject&lt;S = <span class="built_in">any</span>, A <span class="keyword">extends</span> Action = Action&gt; = &#123;</div><div class="line">  [K <span class="keyword">in</span> keyof S]: Reducer&lt;S[K], A&gt;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>结合 <code>FluxAction</code> 和 <code>IStoreTree</code> 可以定义我们自己想要的 <code>Reducer</code> 和 <code>ReducersMapObject</code>：</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/types/store.d.ts</span></div><div class="line"><span class="keyword">import</span> &#123;Reducer, ReducersMapObject&#125; <span class="keyword">from</span> <span class="string">'redux'</span></div><div class="line"></div><div class="line"><span class="comment">// 结合 FluxAction 的 Reducer</span></div><div class="line"><span class="keyword">type</span> FluxReducer&lt;S = <span class="built_in">any</span>, P = <span class="built_in">any</span>,M = <span class="built_in">any</span>&gt; = Reducer&lt;S, FluxAction&lt;P, M&gt;&gt;</div><div class="line"></div><div class="line"><span class="comment">// 结合 FluxAction 的 ReducersMapObject</span></div><div class="line"><span class="keyword">type</span> FluxReducerMap&lt;S = <span class="built_in">any</span>, P = <span class="built_in">any</span>, M = <span class="built_in">any</span>&gt; = ReducersMapObject&lt;S, FluxAction&lt;P,M&gt;&gt;</div><div class="line"></div><div class="line"><span class="comment">// 结合 IStoreTree 的 FluxReducer</span></div><div class="line"><span class="keyword">type</span> StoreFR&lt;P = <span class="built_in">any</span>, M = <span class="built_in">any</span>&gt; = FluxReducer&lt;IStoreTree, P, M&gt;</div><div class="line"></div><div class="line"><span class="comment">// 结合 IStoreTree 的 FluxReducerMap</span></div><div class="line"><span class="keyword">type</span> StoreFRM&lt;P = <span class="built_in">any</span>, M = <span class="built_in">any</span>&gt; = FluxReducerMap&lt;IStoreTree, P, M&gt;</div></pre></td></tr></table></figure>
+<p>  当涉及到组件状态时候，<strong>不可变数据</strong>总是绕不开的话题，社区里常用的不可变数据函数库有 <code>immutable</code> 和 <code>immer</code> 等等，由于 <code>immutable</code> 对于数据结构处理较为繁琐，需要在它提供的对象和原始 <code>javascript</code> 对象间来回切换，故打算采用更为轻量的 <code>immer</code> 库，为了让开发者对不可变数据无感知，需要对每个 <code>reducer</code> 做些额外处理：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/store/create-immutable-reducer.ts</span></div><div class="line"><span class="keyword">import</span> produce <span class="keyword">from</span> <span class="string">'immer'</span></div><div class="line"><span class="keyword">import</span> &#123;ReducersMapObject&#125; <span class="keyword">from</span> <span class="string">'redux'</span></div><div class="line"></div><div class="line"><span class="comment">// 通过 immer 构建不可变 reducer</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">createImReducer</span>(<span class="params">reducer: StoreFR</span>): <span class="title">StoreFR</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> (state: IStoreNode, action: FluxAction): <span class="function"><span class="params">IStoreNode</span> =&gt;</span></div><div class="line">    produce(state, (draftState: IStoreNode):<span class="function"><span class="params">IStoreNode</span> =&gt;</span> reducer(draftState, action))</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 构建不可变 reducer 集合</span></div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> (reducers: StoreFRM) =&gt; &#123;</div><div class="line">  <span class="keyword">const</span> imReducers: StoreFRM = &#123;&#125;</div><div class="line"></div><div class="line">  <span class="built_in">Object</span>.keys(reducers).forEach(</div><div class="line">    (key: <span class="built_in">string</span>) =&gt; &#123;</div><div class="line">      imReducers[key] = createImReducer(reducers[key])</div><div class="line">  &#125;)</div><div class="line"></div><div class="line">  <span class="keyword">return</span> imReducers</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>  构建好不可变状态后，可以开始实现 <code>user reducer</code> 的功能：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/pages/user/user.ts</span></div><div class="line"><span class="comment">// 初始状态</span></div><div class="line"><span class="keyword">const</span> initState: IUserState = &#123;</div><div class="line">  ui: &#123;</div><div class="line">    loading: <span class="literal">false</span></div><div class="line">  &#125;,</div><div class="line">  user: &#123;&#125;</div><div class="line">&#125;</div><div class="line"><span class="comment">// user reducer</span></div><div class="line"><span class="keyword">const</span> reducer:StoreFR&lt;IUserState&gt; = <span class="function">(<span class="params">state: IUserState, action: FluxAction</span>) =&gt;</span> &#123;</div><div class="line">  <span class="keyword">const</span> &#123;<span class="keyword">type</span>, payload&#125; = action</div><div class="line">  <span class="keyword">switch</span>(<span class="keyword">type</span>) &#123;</div><div class="line">    <span class="comment">// 切换 loading 状态</span></div><div class="line">    <span class="keyword">case</span> <span class="string">'TOGGLE_LOADING'</span>: </div><div class="line">      state.ui.loading = payload</div><div class="line">      <span class="keyword">return</span> state</div><div class="line">    </div><div class="line">    <span class="comment">// 修改用户信息</span></div><div class="line">    <span class="keyword">case</span> <span class="string">'UPDATE_USER'</span>:</div><div class="line">      state.user = payload</div><div class="line">      <span class="keyword">return</span> state</div><div class="line">    </div><div class="line">    <span class="comment">// 获取用户信息</span></div><div class="line">    <span class="keyword">case</span> <span class="string">'GET_USER_DETAIL_PENDING'</span>: </div><div class="line">      state.ui.loading = <span class="literal">true</span></div><div class="line">      <span class="keyword">return</span> state</div><div class="line">    <span class="keyword">case</span> <span class="string">'GET_USER_DETAIL_REJECTED'</span>:</div><div class="line">      state.ui.loading = <span class="literal">false</span></div><div class="line">      state.user = &#123;&#125;</div><div class="line">      <span class="keyword">return</span> state</div><div class="line">    <span class="keyword">case</span> <span class="string">'GET_USER_DETAIL_FULFILLED'</span>:</div><div class="line">      state.ui.loading = <span class="literal">false</span></div><div class="line">      state.user = payload</div><div class="line">      <span class="keyword">return</span> state</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>  上述代码中 <code>reducer</code> 函数是标准的 <code>Redux reducer</code>，这种方式存在函数过长、功能划分不够细致、 <code>action payload</code> 类型不确定等弊端，可以尝试使用 <code>type-to-reducer</code> 库对其进行简化：</p>
+  <figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/pages/user/user.ts</span></div><div class="line"><span class="keyword">import</span> TypeToReducer <span class="keyword">from</span> <span class="string">'type-to-reducer'</span></div><div class="line"><span class="comment">// 初始状态</span></div><div class="line"><span class="keyword">const</span> initState: IUserState = &#123;</div><div class="line">  ui: &#123;</div><div class="line">    loading: <span class="literal">false</span></div><div class="line">  &#125;,</div><div class="line">  user: &#123;&#125;</div><div class="line">&#125;</div><div class="line"><span class="comment">// user reducer</span></div><div class="line"><span class="keyword">const</span> reducer = TypeToReducer(</div><div class="line">  &#123;</div><div class="line">    TOGGLE_LOADING: (state: IUserState, action: FluxAction&lt;<span class="built_in">boolean</span>&gt;): <span class="function"><span class="params">IUserState</span> =&gt;</span> &#123;</div><div class="line">      state.ui.loading = action.payload</div><div class="line">      <span class="keyword">return</span> state</div><div class="line">    &#125;,</div><div class="line">    UPDATE_USER:  (state: IUserState, action: FluxAction&lt;IUser&gt;): <span class="function"><span class="params">IUserState</span> =&gt;</span> &#123;</div><div class="line">      state.user = user</div><div class="line">      <span class="keyword">return</span> state</div><div class="line">    &#125;,</div><div class="line">    GET_USER_DETAIL: &#123;</div><div class="line">      PENDING: (state: IUserState): <span class="function"><span class="params">IUserState</span> =&gt;</span> &#123;</div><div class="line">        state.ui.loading = <span class="literal">true</span></div><div class="line">        </div><div class="line">        <span class="keyword">return</span> state</div><div class="line">      &#125;,</div><div class="line">      REJECTED: (state: IUserState): <span class="function"><span class="params">IUserState</span> =&gt;</span> &#123;</div><div class="line">        state.ui.loading = <span class="literal">false</span></div><div class="line">        state.user = &#123;&#125;</div><div class="line">        </div><div class="line">        <span class="keyword">return</span> state</div><div class="line">      &#125;,</div><div class="line">      FULFILLED: (state: IUserState, action: FluxAction&lt;IUser&gt;): <span class="function"><span class="params">IUserState</span> =&gt;</span> &#123;</div><div class="line">        state.ui.loading = <span class="literal">false</span></div><div class="line">        state.user = action.payload</div><div class="line">        </div><div class="line">        <span class="keyword">return</span> state</div><div class="line">      &#125;</div><div class="line">    &#125;</div><div class="line">  &#125;, </div><div class="line">  initState</div><div class="line">)</div></pre></td></tr></table></figure>
+<p>  至此还剩最后三个步骤：</p>
+<ol>
+<li><p>把不可变 <code>reducer</code> 的创建和普通 <code>reducer</code> 结合起来</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/store/root-reducer.ts</span></div><div class="line"><span class="comment">// reducer 集合</span></div><div class="line"><span class="keyword">import</span> createImReducers <span class="keyword">from</span> <span class="string">'./create-immutable-reducers'</span></div><div class="line"><span class="keyword">import</span> user <span class="keyword">from</span> <span class="string">'../pages/user/user'</span></div><div class="line"></div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> createImReducers(&#123;</div><div class="line">  user</div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+</li>
+<li><p>创建 <code>store</code> 并引入中间件</p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/store/create-store.ts</span></div><div class="line"><span class="keyword">import</span> Thunk <span class="keyword">from</span> <span class="string">'redux-thunk'</span></div><div class="line"><span class="keyword">import</span> promiseMiddleware <span class="keyword">from</span> <span class="string">'redux-promise-middleware'</span></div><div class="line"><span class="keyword">import</span> &#123; createStore, combineReducers, applyMiddleware &#125; <span class="keyword">from</span> <span class="string">'redux'</span></div><div class="line"></div><div class="line"><span class="keyword">import</span> reducers <span class="keyword">from</span> <span class="string">'./root-reducer'</span></div><div class="line"></div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span>(<span class="params">initialState:IStoreTree</span>):<span class="title">any</span> </span>&#123;</div><div class="line">  <span class="keyword">return</span> createStore(</div><div class="line">    combineReducers(reducers), </div><div class="line">    initialState,</div><div class="line">    applyMiddleware(promiseMiddleware(), Thunk)</div><div class="line">  )</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+<li><p><code>User</code> 页面组件连接 <code>redux</code></p>
+<figure class="highlight ts"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 文件: client/pages/user/index.tsx</span></div><div class="line"><span class="keyword">import</span> &#123;connect&#125; <span class="keyword">from</span> <span class="string">'react-redux'</span></div><div class="line"><span class="keyword">import</span> &#123;bindActionCreators, Dispatch&#125; <span class="keyword">from</span> <span class="string">'redux'</span></div><div class="line"><span class="keyword">import</span> &#123;Spin, Input&#125;  <span class="keyword">from</span> <span class="string">'antd'</span></div><div class="line"><span class="keyword">import</span> &#123;getUserDetail&#125; <span class="keyword">from</span> <span class="string">'./user'</span></div><div class="line"></div><div class="line"><span class="comment">// User 组件属性接口</span></div><div class="line"><span class="keyword">interface</span> IProps <span class="keyword">extends</span> IUserState &#123;</div><div class="line">  actions: <span class="built_in">any</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// User 组件</span></div><div class="line"><span class="keyword">class</span> User <span class="keyword">extends</span> React.Component&lt;IProps&gt; &#123;</div><div class="line">  componentDidMount() &#123;</div><div class="line">    <span class="keyword">this</span>.props.actions.getUserDetail(<span class="string">'xxxx'</span>)</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  render() &#123;</div><div class="line">    <span class="keyword">const</span> &#123;ui, user&#125; = <span class="keyword">this</span>.props</div><div class="line">    </div><div class="line">    <span class="keyword">return</span> (</div><div class="line">      &lt;Spin spinning=&#123;ui.loading&#125;&gt;</div><div class="line">        &lt;strong&gt;用户姓名：&lt;<span class="regexp">/strong&gt;</span></div><div class="line"><span class="regexp">        &lt;Input value=&#123;user.name&#125; /</span>&gt;</div><div class="line">        </div><div class="line">         &lt;strong&gt;用户年龄：&lt;<span class="regexp">/strong&gt;</span></div><div class="line"><span class="regexp">         &lt;Input value=&#123;user.age&#125; /</span>&gt;</div><div class="line">        </div><div class="line">         &lt;strong&gt;所属部门：&lt;<span class="regexp">/strong&gt;</span></div><div class="line"><span class="regexp">         &lt;Input value=&#123;user.department&#125; /</span>&gt;</div><div class="line">      &lt;<span class="regexp">/Spin&gt;</span></div><div class="line"><span class="regexp">    )</span></div><div class="line"><span class="regexp">  &#125;</span></div><div class="line"><span class="regexp">&#125;</span></div><div class="line"><span class="regexp"></span></div><div class="line"><span class="regexp">export default connect(</span></div><div class="line"><span class="regexp">  (store: IStoreTree): IUserState =&gt; store.user,</span></div><div class="line"><span class="regexp">  (dispatch: Dispatch&lt;FluxAction&gt;) =&gt; (&#123;</span></div><div class="line"><span class="regexp">    actions: bindActionCreators(&#123;getUserDetail&#125;, dispatch)</span></div><div class="line"><span class="regexp">  &#125;)</span></div><div class="line"><span class="regexp">)</span></div></pre></td></tr></table></figure>
+</li>
+</ol>
+
+      
+    </div>
+    <footer class="article-footer">
+     
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <span id="article-nav-newer" class="article-nav-link-wrap newer"></span>
+  
+  
+    <a href="/2019/01/21/React + Redux + TypeScript 实践一：目录结构划分/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">React + Redux + TypeScript 实践一：目录结构划分</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+        <ul class="footer-links">
+          
+            <li><a href="/archives/"><span class="fa fa-book"></span></a></li>
+          
+            <li><a href="https://github.com"><span class="fa fa-globe"></span></a></li>
+          
+            <li><a href="https://twitter.com/"><span class="fa fa-twitter"></span></a></li>
+          
+            <li><a href="https://github.com/"><span class="fa fa-github-alt"></span></a></li>
+          
+            <li><a href="https://www.youtube.com/"><span class="fa fa-youtube-play"></span></a></li>
+          
+            <li><a href="https://stackoverflow.com/"><span class="fa fa-stack-overflow"></span></a></li>
+          
+            <li><a href="https://plus.google.com/"><span class="fa fa-google-plus"></span></a></li>
+          
+            <li><a href="/atom.xml"><span class="fa fa-rss"></span></a></li>
+          
+        </ul>
+	    
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>You only get one shot, do not miss your chance to blow!</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/typing.js"></script>
+<!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>
