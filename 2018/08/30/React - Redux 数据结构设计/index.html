@@ -12,7 +12,7 @@
 <meta property="og:url" content="http://yoursite.com/2018/08/30/React - Redux 数据结构设计/index.html">
 <meta property="og:site_name" content="ChongYa&#39;s Blog">
 <meta property="og:description" content="什么数据适合放在 store 中？我们可以通过数据持久度和数据消费程度来区分数据类型：  数据持久度  快速变更型 中等持续型 长远稳定型  快速变更型：这类数据往往代表着短时间内快速变更，比如文本框内容可能随着用户输入持续变化，或者快速拖动变更位置等，这类数据更加适合维护在 state 中。 中等持续性：当用户浏览或者使用应用时，在刷新页面之前数据保持相对稳定，比如 ajax 获取数据，编辑 f">
-<meta property="og:updated_time" content="2018-09-01T06:29:44.000Z">
+<meta property="og:updated_time" content="2019-01-22T07:18:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="React-Redux 数据结构设计">
 <meta name="twitter:description" content="什么数据适合放在 store 中？我们可以通过数据持久度和数据消费程度来区分数据类型：  数据持久度  快速变更型 中等持续型 长远稳定型  快速变更型：这类数据往往代表着短时间内快速变更，比如文本框内容可能随着用户输入持续变化，或者快速拖动变更位置等，这类数据更加适合维护在 state 中。 中等持续性：当用户浏览或者使用应用时，在刷新页面之前数据保持相对稳定，比如 ajax 获取数据，编辑 f">
@@ -127,7 +127,7 @@
 <p><strong><code>React</code> 组件内部</strong>写逻辑：如果组件内部需要维护 <code>state</code>，那么很可能会涉及到 <code>state</code> 的逻辑处理；而对于没有 <code>state</code> 可维护的组件而言，拿到手的 <code>props</code> 不一定可以直接适配 <code>render</code> 组件树需要的数据，因此需要对其进行衍生计算；甚至对于一些 需要在 <code>action-creator</code> 内部处理的逻辑也可以在组件内部进行消化。</p>
 <p><strong><code>action-creator</code> 函数内部</strong>和 <strong><code>reducer</code> 函数内部</strong>写逻辑：<code>action-creator</code> 比 <code>reducer</code> 数据处理能力更强。得益于<strong>中间件</strong>，<code>action-creator</code> 可以感知整个 <code>Redux store</code>，并且可以处理<strong>异步逻辑</strong>；而 <code>reducer</code> 只能获取自身维护的 <code>state</code>，并且受限于<strong>纯函数</strong>无法处理<strong>异步逻辑</strong>。抛开获取整个 <code>Redux store</code> 和异步逻辑的场景不谈，我个人更倾向于将逻辑写在 <code>action-creator</code> 中，理由有二：</p>
 <ul>
-<li><code>action-creator</code> 与 <code>reducer</code> 是<strong>多对一</strong>的关系，将逻辑写在 <code>action-creator</code> 中，可以在分散处理逻辑的同时保持 <code>reducer</code> 函数内部简洁可读</li>
+<li><code>action-creator</code> 与 <code>reducer</code> 是<strong>多对一</strong>的关系，将逻辑写在 <code>action-creator</code> 中，可以在分散处理逻辑的同时保持 <code>reducer</code> 函数内部简洁可读（但是如果使用了 <code>type-to-reducer</code> 库，则可以将 <code>reducer</code> 代码逻辑进一步拆分，避免 <code>reducer</code> 函数过于冗长）</li>
 <li>如果使用了 <code>immutable</code> 库来维护不可变对象，在 <code>reducer</code> 中去处理逻辑会增加额外的操作成本</li>
 </ul>
 <p><strong><code>connect</code> 函数内部</strong>写逻辑：<code>connect</code> 作为 <code>Redux store</code> 和 <code>React</code> 组件的<strong>胶合层</strong>，可以方便 <code>React</code> 组件获取 <code>Redux store</code> 衍生计算（通常在 <code>mapStateToProps</code> 函数中计算）后的状态，相比于在 <code>render</code> 函数中写 <code>Redux store</code> 衍生计算逻辑，在 <code>mapStateToProps</code> 函数中写逻辑可以在一定程度上将该部分逻辑与 <code>render</code> 的视图<strong>分离</strong>，分层更加清晰，并且可以通过 <a href="https://github.com/reduxjs/reselect" target="_blank" rel="external"><code>reselect</code></a> 库可以<strong>缓存</strong>计算结果。</p>
