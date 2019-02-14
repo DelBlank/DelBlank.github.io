@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  
+  <title>React diff 探究 | ChongYa&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="0. 前言Virtual DOM 是 React 对真实 DOM 的一种抽象，其本质是一个 js 对象。 React render 函数每次执行都会生成一个新 Virtual DOM Tree，diff 算法就是比较前后两次 render 函数生成的 Virtual DOM Tree 的差异性，相比于通过传统 diff 方法比较随机两棵树差异的 O(n^3) 时间复杂度，React diff 算法">
+<meta name="keywords" content="react">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React diff 探究">
+<meta property="og:url" content="http://yoursite.com/2019/02/14/React diff 探究/index.html">
+<meta property="og:site_name" content="ChongYa&#39;s Blog">
+<meta property="og:description" content="0. 前言Virtual DOM 是 React 对真实 DOM 的一种抽象，其本质是一个 js 对象。 React render 函数每次执行都会生成一个新 Virtual DOM Tree，diff 算法就是比较前后两次 render 函数生成的 Virtual DOM Tree 的差异性，相比于通过传统 diff 方法比较随机两棵树差异的 O(n^3) 时间复杂度，React diff 算法">
+<meta property="og:image" content="http://yoursite.com/images/resources/react-reconciliation.png">
+<meta property="og:image" content="http://yoursite.com/images/resources/react-level-diff.png">
+<meta property="og:image" content="http://yoursite.com/images/resources/react-cross-level.png">
+<meta property="og:image" content="http://yoursite.com/images/resources/react-root-diff.png">
+<meta property="og:image" content="http://yoursite.com/images/resources/search-next-list.png">
+<meta property="og:image" content="http://yoursite.com/images/resources/search-prev-list.png">
+<meta property="og:updated_time" content="2019-02-14T06:43:31.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React diff 探究">
+<meta name="twitter:description" content="0. 前言Virtual DOM 是 React 对真实 DOM 的一种抽象，其本质是一个 js 对象。 React render 函数每次执行都会生成一个新 Virtual DOM Tree，diff 算法就是比较前后两次 render 函数生成的 Virtual DOM Tree 的差异性，相比于通过传统 diff 方法比较随机两棵树差异的 O(n^3) 时间复杂度，React diff 算法">
+<meta name="twitter:image" content="http://yoursite.com/images/resources/react-reconciliation.png">
+  
+  
+    <link rel="icon" href="/favicon.ico">
+  
+  <link rel="stylesheet" href="/css/typing.css">
+  <link rel="stylesheet" href="/css/donate.css">
+  
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  
+</head>
+
+  
+    
+      <body>
+    
+  
+      <div id="container" class="container">
+        <article id="post-React diff 探究" class="article article-type-post" itemscope itemprop="blogPost">
+  <header id="header" class="header">
+  <nav id="main-nav" class="main-nav">
+    
+      <a class="main-nav-link" href="/">Home</a>
+    
+      <a class="main-nav-link" href="/archives">Archives</a>
+    
+      <a class="main-nav-link" href="/about">About</a>
+    
+  </nav>
+</header>
+
+  <hr/>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      React diff 探究
+    </h1>
+  
+
+      </header>
+    
+    <ul class="article-meta">
+      <li>
+        <span class="label">Published Date:</span>
+        <a href="/2019/02/14/React diff 探究/" class="article-date">
+  <time datetime="2019-02-13T16:00:00.000Z" itemprop="datePublished">2019-02-14</time>
+</a>
+
+      </li>
+      
+      
+        <li>
+          <span class="label">Tag:</span>
+          
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/react/">react</a></li></ul>
+
+
+        </li>
+      
+      <hr/>
+    </ul>
+    <div class="article-entry typo" itemprop="articleBody">
+      
+        <h3 id="0-前言"><a href="#0-前言" class="headerlink" title="0. 前言"></a>0. 前言</h3><p><code>Virtual DOM</code> 是 <code>React</code> 对真实 <code>DOM</code> 的一种抽象，其本质是一个 <strong>js 对象</strong>。</p>
+<p><code>React render</code> 函数每次执行都会生成一个新 <code>Virtual DOM Tree</code>，<code>diff</code> 算法就是比较前后两次 <code>render</code> 函数生成的 <code>Virtual DOM Tree</code> 的<strong>差异性</strong>，相比于通过传统 <code>diff</code> 方法比较随机两棵树差异的 <code>O(n^3)</code> 时间复杂度，<code>React diff</code> 算法可以将时间复杂度降至 <code>O(n)</code> （其中 <code>n</code> 为树中的节点数）。</p>
+<p>通过 <code>diff</code> 算法，<code>React</code> 可以找出新老 <code>Virtual DOM Tree</code> 的<strong>最小差异集</strong>，下一步就是要把这些变化通过<strong>最少步骤</strong>更新到真实的 <code>DOM</code> 节点上，<code>React</code> 把<strong>构造新 <code>Virtual DOM</code> -&gt; 执行 <code>diff</code> 算法 -&gt; 更新老 <code>Virtual DOM</code> -&gt; 更新真实 <code>DOM</code></strong> 这一流程称为 <code>reconciliation</code> 流程。</p>
+<blockquote>
+<p>Reconciliation is the process through which React updates the DOM.</p>
+</blockquote>
+<p>以下是 <code>render</code> 函数执行后的组件生命周期图：</p>
+<p><img src="/2019/02/14/React diff 探究/../../../../images/resources/react-reconciliation.png" alt="react-reconciliation.png"></p>
+<h3 id="1-React-Element"><a href="#1-React-Element" class="headerlink" title="1. React Element"></a>1. React Element</h3><p>在介绍 <code>Virtual DOM</code> 之前，先了解下 <code>React Element</code>，<code>React Element</code> 是 <code>React</code> 应用的<strong>最小单元</strong>。</p>
+<blockquote>
+<p>Elements are the smallest building blocks of React apps.</p>
+</blockquote>
+<p><code>React Element</code> 分为两种：<strong><code>DOM Element</code></strong> 和 <strong><code>Component Element</code></strong>。</p>
+<ul>
+<li><code>DOM Element</code>：浏览器原生支持的 <code>DOM</code> 元素(比如 <code>div</code>，<code>p</code> 等)的抽象描述</li>
+<li><code>Component Element</code>：通过 <code>React Component</code> 构建出来的元素（构建方式为<strong>函数</strong>或者 <strong><code>ES6 class</code> 类</strong>）<blockquote>
+<p>Components let you split the UI into independent, reusable pieces, and think about each piece in isolation. </p>
+</blockquote>
+</li>
+</ul>
+<h3 id="2-Virtual-DOM"><a href="#2-Virtual-DOM" class="headerlink" title="2. Virtual DOM"></a>2. Virtual DOM</h3><p>以 <code>React15</code> 为例：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// virtual dom</span></div><div class="line"><span class="keyword">const</span> vDom = &lt;div&gt;virtual dom&lt;/div&gt;</div><div class="line"></div><div class="line"><span class="comment">// babel 转义后变成 js 对象</span></div><div class="line"><span class="keyword">const</span> vDomObj = &#123;</div><div class="line">  $$<span class="keyword">typeof</span>: <span class="built_in">Symbol</span>(react.element),</div><div class="line">  key: <span class="literal">null</span>,</div><div class="line">  ref: <span class="literal">null</span>,</div><div class="line">  type: <span class="string">'div'</span>,</div><div class="line">  props: &#123;</div><div class="line">    children: <span class="string">'virtual dom'</span></div><div class="line">  &#125;,</div><div class="line">  _owner: &#123;...&#125;,</div><div class="line">  _store: &#123;<span class="attr">validated</span>: <span class="literal">false</span>&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>vDomObj</code> 各属性含义如下：</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$$typeof</td>
+<td>Symbol</td>
+<td>标志该对象是否是 <code>React Element</code>，设计初衷是为了<a href="https://github.com/facebook/react/issues/3473" target="_blank" rel="external">避免 xss</a></td>
+</tr>
+<tr>
+<td>key</td>
+<td>string / null</td>
+<td><code>Virtual DOM</code> 的唯一标识</td>
+</tr>
+<tr>
+<td>ref</td>
+<td>string / function / null</td>
+<td>真实 <code>DOM</code> 节点或 <code>React</code> 元素的索引</td>
+</tr>
+<tr>
+<td>type</td>
+<td>string / function</td>
+<td><code>Virtual DOM</code> 元素类型（包括 <code>DOM Element</code> 和 <code>Component Element</code>）</td>
+</tr>
+<tr>
+<td>props</td>
+<td>object</td>
+<td><code>Virtual DOM</code> 元素属性，包含 <code>children</code></td>
+</tr>
+<tr>
+<td>_owner</td>
+<td>object</td>
+<td>指明该 <code>Virtual Dom</code> 的父元素</td>
+</tr>
+<tr>
+<td>_store</td>
+<td>object</td>
+<td>未知</td>
+</tr>
+</tbody>
+</table>
+<h3 id="3-diff-算法"><a href="#3-diff-算法" class="headerlink" title="3. diff 算法"></a>3. <code>diff</code> 算法</h3><p><code>React</code> 官网中描述的 <code>diff</code> 算法基于以下两个假设：</p>
+<blockquote>
+<ol>
+<li>Two elements of different types will produce different trees.</li>
+<li>The developer can hint at which child elements may be stable across different renders with a key prop.</li>
+</ol>
+</blockquote>
+<p>即：</p>
+<ol>
+<li>不同类型的元素产生会产生不同的节点树。</li>
+<li>不同子元素可以通过 <code>key</code> 属性来保持稳定。</li>
+</ol>
+<p>除此之外，还有一个隐藏的假设：</p>
+<ol>
+<li><code>Web UI</code> 中的 <code>DOM</code> 节点的跨层级操作特别少，可以忽略不计。</li>
+</ol>
+<h4 id="基于假设三：分层比较"><a href="#基于假设三：分层比较" class="headerlink" title="基于假设三：分层比较"></a>基于假设三：分层比较</h4><p>假设三是整个 <code>diff</code> 算法的基础，它确立了 <code>React</code> 对树的<strong>分层比较</strong>策略，即 <code>diff</code> 算法在比较新老 <code>Virtual DOM Tree</code> 的时候，只会比较<strong>同层级</strong>的 <code>Virtual DOM</code>，如下图，<code>diff</code> 算法只会比较相同颜色框中的节点。正是这种<strong>分层比较</strong>策略可以让 <code>diff</code> 在根据广度遍历一次 <code>Virtual DOM Tree</code> 后就完成整颗树的比较。 </p>
+<p><img src="/2019/02/14/React diff 探究/../../../../images/resources/react-level-diff.png" alt="react-level-diff.png"></p>
+<p>然而，在实际使用 <code>React</code> 过程中，无法完全避免节点的跨层级操作，比如下图中要将 <code>A</code> 节点从 <code>B</code> 节点下方跨层级移动到 <code>R</code> 节点下方，对于这种情况，<code>diff</code> 算法首先发现 <code>R</code> 节点的子节点多了一个 <code>A</code> 节点，因此会创建一个新的 <code>A</code> 节点，然后遍历 <code>B</code> 节点的子节点时，发现少了一个 <code>A</code> 节点，因此会删除原先 <code>B</code> 节点下方的 <code>A</code> 节点，整个过程即 <code>find new R.A</code> -&gt; <code>create R.A</code> -&gt; <code>B.A not exists</code> -&gt; <code>delete B.A</code>。<code>diff</code> 算法不会把 <code>B.A</code> 完整的移动到 <code>R.A</code> 上，而是通过上述先增后删的操作来实现这种‘移动’效果。</p>
+<p><img src="/2019/02/14/React diff 探究/../../../../images/resources/react-cross-level.png" alt="react-cross-level.png"></p>
+<h3 id="基于假设一：减少比较次数"><a href="#基于假设一：减少比较次数" class="headerlink" title="基于假设一：减少比较次数"></a>基于假设一：减少比较次数</h3><p>当对比两棵 <code>Virtual DOM Tree</code> 时，<code>diff</code> 算法会优先比较两棵树的根节点，如果它们的类型（<code>type</code>）不同则认为这两个根节点及其下属的子树是<strong>完全不同</strong>的，<code>diff</code> 算法不会再继续递归比较两棵子树，如下图所示，当 <code>diff</code> 算法检测到 <code>R1.type !== R2.type</code>，则其会把 <code>R1</code> 跟 <code>R2</code> 视为两个不同的节点，因此会删除 <code>R1</code> 节点及 <code>R1.A</code> 和 <code>R1.B</code>，然后再创建 <code>R2</code>、<code>R2.A</code> 和 <code>R2.B</code>。通过这种策略，<code>diff</code> 算法可以减少遍历比较次数，从而一定程度上提升算法的性能。</p>
+<p><img src="/2019/02/14/React diff 探究/../../../../images/resources/react-root-diff.png" alt="react-root-diff.png"></p>
+<h3 id="基于假设二：稳定的-DOM"><a href="#基于假设二：稳定的-DOM" class="headerlink" title="基于假设二：稳定的 DOM"></a>基于假设二：稳定的 <code>DOM</code></h3><p><code>Virtual DOM</code> 的 <code>key</code> 属性用来标识该节点是否唯一，<code>diff</code> 算法可以根据 <code>key</code> 值来判断新老两个 <code>Virtual DOM</code> 在类型相同的情况下是否是<strong>同一个实例</strong>，如果新老 <code>Virtual DOM</code> 的 <code>key</code> 值不同，则 <code>diff</code> 算法会销毁老的实例，然后再创建一个新的实例。下面的代码在切换 <code>Child</code> 的 <code>key</code> 值后，会把原先的 <code>a</code> 实例销毁掉，再创建一个 <code>b</code> 实例。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Child</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</div><div class="line">  <span class="keyword">constructor</span>(props)&#123;</div><div class="line">    <span class="keyword">super</span>(props)</div><div class="line">    </div><div class="line">    <span class="built_in">console</span>.log(<span class="string">`创建实例<span class="subst">$&#123;props.name&#125;</span>`</span>)</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  componentWillUnmount()&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">`销毁实例<span class="subst">$&#123;<span class="keyword">this</span>.props.name&#125;</span>`</span>)</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  render() &#123;</div><div class="line">    <span class="keyword">return</span> &lt;div&gt;子组件&lt;/div&gt;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">Parent</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">Component</span> </span>&#123;</div><div class="line">  state = &#123;<span class="attr">key</span>: <span class="number">1</span>, <span class="attr">name</span>: <span class="string">'a'</span>&#125;</div><div class="line">  </div><div class="line">  render() &#123;</div><div class="line">    <span class="keyword">return</span> (</div><div class="line">      &lt;div&gt;</div><div class="line">        &lt;button onClick=&#123;() =&gt; <span class="keyword">this</span>.setState(&#123;<span class="attr">key</span>: <span class="number">2</span>, <span class="attr">name</span>: <span class="string">'b'</span>&#125;)&#125;&gt;</div><div class="line">          切换 key</div><div class="line">        &lt;<span class="regexp">/button&gt;</span></div><div class="line"><span class="regexp">        &lt;Child key=&#123;this.state.key&#125; name=&#123;this.state.name&#125; /</span>&gt;</div><div class="line">      &lt;<span class="regexp">/div&gt;</span></div><div class="line"><span class="regexp">    )</span></div><div class="line"><span class="regexp">  &#125;</span></div><div class="line"><span class="regexp">&#125;</span></div><div class="line"><span class="regexp"></span></div><div class="line"><span class="regexp">/</span>*</div><div class="line">初始化: 打印出 <span class="string">'创建实例a'</span></div><div class="line">点击切换按钮后: 打印出 <span class="string">'销毁实例a'</span> -&gt; 打印出 <span class="string">'创建实例b'</span></div><div class="line">*<span class="regexp">/</span></div></pre></td></tr></table></figure>
+<p><code>key</code> 的作用不仅仅体现在<strong>保证元素的稳定</strong>上，它还可以帮助 <code>diff</code> 算法快速找到 <code>Virtual DOM</code> 列表中的某个具体节点。</p>
+<p>在实际应用中，经常会出现某个节点含有多个子节点的场景，对于 <code>diff</code> 算法来说，<strong>有效快速地比较出改变前后子节点列表的差异和更新步骤</strong>可以显著提升 <code>React</code> 应用的性能。</p>
+<p>换言之，<code>diff</code> 算法要在 <code>O(n)</code> 的时间复杂度内找出将改变前子节点列表变换到改变后子节点列表的<strong>最少步骤</strong>，这个问题其实是<a href="https://delblank.github.io/2018/09/30/%E6%9C%80%E7%9F%AD%E7%BC%96%E8%BE%91%E8%B7%9D%E7%A6%BB/" target="_blank" rel="external">求解最小编辑距离</a>问题的变种，但是求解最小编辑距离的传统算法可以把时间复杂度控制在 <code>O(n^2)</code> 内，对于 <code>React</code> 来说依旧太费时，所以 <code>React diff</code> 算法采取了其他策略来保证时间复杂度为 <code>O(n)</code>。 </p>
+<p>让我们把问题抽象简化：给定改变前的子节点列表 <code>prevList</code> 和改变后的子节点列表 <code>nextList</code>，求将 <code>prevList</code> 变换成 <code>nextList</code> 所需的最少操作步骤，操作步骤可以为</p>
+<ul>
+<li><code>INSERT_MARKUP</code>：若 <code>nextList</code> 中某节点 <code>type</code> 不存在 <code>prevList</code> 内，则需要对该新节点执行插入操作。</li>
+<li><code>MOVE_EXISTING</code>：若 <code>nextList</code> 与 <code>prevList</code> 中存在相同 <code>type</code> 和 <code>key</code> 的节点，则直接复用 <code>prevList</code> 中节点，并对其做移动操作。</li>
+<li><code>REMOVE_NODE</code>：若 <code>nextList</code> 中不存在与 <code>prevList</code> 中某节点相同 <code>type</code> 和 <code>key</code> 的节点，则从 <code>prevList</code> 中删除该节点。</li>
+</ul>
+<p>我们需要一个队列 <code>updateQueue</code> 来按照优先顺序依次存放计算过程中得到的操作，<code>updateQueue</code> 是一个数组，它的每个元素是一个描述某次操作的 <code>js</code> 对象，其属性定义如下：</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>type</td>
+<td>操作类型，包括 <code>INSERT_MARKUP</code>、<code>MOVE_EXISTING</code>、<code>REMOVE_NODE</code></td>
+</tr>
+<tr>
+<td>fromIndex</td>
+<td>节点在 <code>prevList</code> 的初始位置信息</td>
+</tr>
+<tr>
+<td>toIndex</td>
+<td>经过移动或插入后，节点在 <code>nextList</code> 的位置信息</td>
+</tr>
+<tr>
+<td>markupNode</td>
+<td>要插入的子节点，仅对 <code>INSERT_MARKUP</code> 有效</td>
+</tr>
+</tbody>
+</table>
+<p>相应的，我们为每种操作分别定义一个函数：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 记录操作的队列</span></div><div class="line"><span class="keyword">const</span> updateQueue = []</div><div class="line"></div><div class="line"><span class="comment">// 记录插入操作</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">enqueueInsert</span>(<span class="params">markupNode, toIndex</span>) </span>&#123;</div><div class="line">  updateQueue.push(&#123;</div><div class="line">    type: INSERT_MARKUP,</div><div class="line">    markupNode,</div><div class="line">    fromIndex: <span class="literal">null</span></div><div class="line">    toIndex</div><div class="line">  &#125;)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 记录移动操作</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">enqueueMove</span>(<span class="params">fromIndex, toIndex</span>) </span>&#123;</div><div class="line">  updateQueue.push(&#123;</div><div class="line">    type: MOVE_EXISTING,</div><div class="line">    fromIndex,</div><div class="line">    toIndex</div><div class="line">  &#125;)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">// 记录删除操作</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">enqueueRemove</span>(<span class="params">fromIndex</span>) </span>&#123;</div><div class="line">  updateQueue.push(&#123;</div><div class="line">    type: REMOVE_NODE,</div><div class="line">    fromIndex,</div><div class="line">    toIndex: <span class="literal">null</span></div><div class="line">  &#125;)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>接下来，为了从 <code>prevList</code> 和 <code>nextList</code> 中快速查找某个节点，得把节点列表转换成一个存放 <code>key - vnode</code> 映射关系的对象。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 节点列表转换为对象</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">nodeListToMap</span> (<span class="params">list = []</span>) </span>&#123;</div><div class="line">  <span class="keyword">const</span> nodeMap = &#123;&#125;</div><div class="line">  </div><div class="line">  list.forEach(</div><div class="line">    (vnode, index) =&gt; &#123;</div><div class="line">      <span class="comment">// 如果不指定节点 key，则直接使用数组的下标</span></div><div class="line">      nodeMap[vnode.key || index] = vnode</div><div class="line">    &#125;</div><div class="line">  )</div><div class="line">  </div><div class="line">  <span class="keyword">return</span> nodeMap</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>通过 <code>nodeMap</code> 分别获取到改变前后两个列表中 <code>key</code> 或 <code>index</code> 相同的两个节点，然后再根据这两个节点是否相等来判断下一步更新操作（插入、删除、移动），为了不遗漏两个列表中的节点，需要分别对两个列表中的节点进行遍历。</p>
+<p>1.首先遍历 <code>nextList</code> 中的节点并将其与 <code>prevList</code> 中的节点进行对比。</p>
+<p><img src="/2019/02/14/React diff 探究/../../../../images/resources/search-next-list.png" alt="search-next-list.png"></p>
+<p>2.再遍历 <code>prevList</code> 中的节点并将其与 <code>nextList</code> 中的节点进行对比。</p>
+<p><img src="/2019/02/14/React diff 探究/../../../../images/resources/search-prev-list.png" alt="search-prev-list.png"></p>
+<p>通过以上两步操作，就可以将 <code>prevList</code> 变换到 <code>nextList</code>，至此还剩下三个关键的问题需要解决，即</p>
+<ul>
+<li>计算新增节点在 <code>nextList</code> 中的<strong>插入位置</strong></li>
+<li>如何删除不存在的老节点</li>
+<li>如何移动可复用的老节点</li>
+</ul>
+<p>在解决的这三个问题之前，首先得了解几个概念</p>
+<table>
+<thead>
+<tr>
+<th>name</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>lastIndex</td>
+<td><code>prevList</code> 中被遍历过最右节点位置（即遍历过节点的最大下标），初始值为 0</td>
+</tr>
+<tr>
+<td>nextIndex</td>
+<td><code>nextList</code> 中当前被遍历到的节点下标，初始值为 0</td>
+</tr>
+<tr>
+<td>mountIndex</td>
+<td>某个节点在 <code>nextList</code> 中的最终位置，初始值为该节点在 <code>prevList</code> 中的位置</td>
+</tr>
+</tbody>
+</table>
+<p>对于插入操作，只需要把新增节点 <code>nextNode</code> 的 <code>mountIndex</code> 设置为 <code>nextIndex</code>，再根据 <code>nextNode.mountIndex</code> 把 <code>nextNode</code> 插入到 <code>nextList</code> 的对应位置即可。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 插入节点</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">insertNode</span>(<span class="params">nextNode, nextIndex</span>)</span>&#123;</div><div class="line">  nextNode.mountIndex = nextIndex</div><div class="line">  </div><div class="line">  enqueueInsert(nextNode, nextIndex)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>对于删除操作，直接根据老节点在 <code>prevList</code> 中的原始位置删除即可。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 删除节点</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">removeNode</span>(<span class="params">prevNode</span>) </span>&#123;</div><div class="line">  enqueueRemove(prevNode.mountIndex)</div><div class="line">  </div><div class="line">  prevNode.mountIndex = <span class="literal">null</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>移动操作稍微复杂些，涉及到 <code>lastIndex</code> 和节点 <code>mountIndex</code> 的大小比较，如果 <code>lastIndex &gt; prevNode.mountIndex</code>，说明当前遍历到的 <code>prevNode</code> 在 <code>prevList</code> 中就比上一个 <code>prevNode</code> 节点靠前，因此需要将当前遍历到的 <code>prevNode</code> 移动到 <code>nextIndex</code> 位置，反之则不用移动。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 移动节点</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">moveNode</span>(<span class="params">prevNode, nextIndex, lastIndex</span>) </span>&#123;</div><div class="line">  <span class="keyword">if</span>(prevNode.mountIndex &lt; lastIndex) &#123;</div><div class="line">    enqueueMove(prevNode.mountIndex, nextIndex)</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>完整的计算更新步骤的代码如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div></pre></td><td class="code"><pre><div class="line"><span class="comment">// 计算更新步骤</span></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">updateList</span>(<span class="params">prevList, nextList</span>) </span>&#123;</div><div class="line">  <span class="comment">// 列表转对象</span></div><div class="line">  <span class="keyword">const</span> prevMap = nodeListToMap(prevList)</div><div class="line">  <span class="keyword">const</span> nextMap = nodeListToMap(nextList)</div><div class="line">  </div><div class="line">  <span class="keyword">let</span> name</div><div class="line">  <span class="comment">// 初始化 lastIndex 和 nextIndex</span></div><div class="line">  <span class="keyword">let</span> lastIndex = <span class="number">0</span></div><div class="line">  <span class="keyword">let</span> nextIndex = <span class="number">0</span></div><div class="line">  </div><div class="line">  <span class="comment">// 首先遍历 nextMap</span></div><div class="line">  <span class="keyword">for</span>(name <span class="keyword">in</span> nextMap) &#123;</div><div class="line">    <span class="keyword">const</span> nextNode = nextMap[name]</div><div class="line">    <span class="comment">// 根据该 name 获取到 prevNode</span></div><div class="line">    <span class="keyword">const</span> prevNode = prevMap[name]</div><div class="line">    </div><div class="line">    <span class="keyword">if</span>(prevNode)&#123;</div><div class="line">      <span class="keyword">if</span>(prevNode.type === nextNode.type) &#123;</div><div class="line">        <span class="comment">// 相同节点执行移动操作</span></div><div class="line">        moveNode(prevNode, nextIndex, lastIndex)</div><div class="line">        <span class="comment">// 更新 lastIndex, 确保它是最右位置</span></div><div class="line">        lastIndex = <span class="built_in">Math</span>.max(prevNode.mountIndex, lastIndex)</div><div class="line">        <span class="comment">// 更新 prevNode 的最终位置</span></div><div class="line">        prevNode.mountIndex = nextIndex</div><div class="line">      &#125; </div><div class="line">      <span class="keyword">else</span> &#123;</div><div class="line">        <span class="comment">// 不同节点，先删除 prevNode，再插入 nextNode</span></div><div class="line">        <span class="comment">// 更新 lastIndex, 确保它是最右位置</span></div><div class="line">        lastIndex = <span class="built_in">Math</span>.max(prevNode.mountIndex, lastIndex)</div><div class="line">        <span class="comment">// 删除 prevNode</span></div><div class="line">        removeNode(prevNode)</div><div class="line">        <span class="comment">// 插入 nextNode</span></div><div class="line">        insertNode(nextNode, nextIndex)</div><div class="line">      &#125;</div><div class="line">      </div><div class="line">    &#125; </div><div class="line">    <span class="keyword">else</span> &#123;</div><div class="line">      <span class="comment">// 若 prevNode 不存在，则直接插入 nextNode</span></div><div class="line">      insertNode(nextNode, nextIndex)</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="comment">// 访问下一个 nextNode, 更新 nextIndex</span></div><div class="line">    nextIndex ++</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">  <span class="comment">// 再遍历 prevMap</span></div><div class="line">  <span class="keyword">for</span>(name <span class="keyword">in</span> prevMap)&#123;</div><div class="line">    <span class="keyword">if</span>(!nextMap[name])&#123;</div><div class="line">      <span class="comment">// 如果老节点在 nextMap 中不存在，则直接删除</span></div><div class="line">      removeNode(prevMap[name])</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>以上代码体现了 <code>React diff</code> 在处理 <code>list diff</code> 时候的基本逻辑，在 <code>React</code> 源码中其实现远比这个复杂，这种处理策略可以保证 <code>diff</code> 算法在处理 <code>list diff</code> 时候可以用线性时间算出更新步骤，可以结合以下例子加深理解：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">prevList:   A      B      C</div><div class="line">          key=a  key=b  key=c</div><div class="line">nextList:   B      A      D</div><div class="line">          key=b  key=a  key=d</div></pre></td></tr></table></figure>
+<p>假设节点列表变化前后节点排列顺序如上所示，根据 <code>list diff</code> 策略处理如下：</p>
+<p>0.初始化时，<code>updateQueue</code> 为空数组，<code>lastIndex</code>、<code>nextIndex</code> 以及各节点的 <code>mountIndex</code> 如下：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>lastIndex</th>
+<th>nextIndex</th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始化</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>null</td>
+</tr>
+</tbody>
+</table>
+<p>1.遍历 <code>nextList.B</code>，发现 <code>prevList.B</code> 也存在，比较 <code>prevList.B.mountIndex</code> 与 <code>lastIndex</code>，发现前者更大，故不需要移动 <code>prevList.B</code>，此时 <code>prevList</code> 中访问的节点最右位置变为 <code>prevList.B.mountIndex</code>，而 <code>B</code> 的最终位置则为 <code>nextList</code> 中当前访问的节点位置，即 <code>nextIndex</code>（<code>prevList.B.mountIndex = nextIndex</code>），然后切换到下一个 <code>nextList</code> 节点。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>lastIndex</th>
+<th>nextIndex</th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始化</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.B</code></td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+</tbody>
+</table>
+<p>2.遍历 <code>nextList.A</code>，发现 <code>prevList.A</code> 也存在，比较 <code>prevList.A.mountIndex</code> 与 <code>lastIndex</code>，发现后者更大，故需要移动 <code>prevList.A</code>，将 <code>prevList.A</code> 移动到 <code>nextIndex</code> 的位置，而保持 <code>lastIndex</code> 不变。<code>updateQueue</code> 变为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">updateQueue = [</div><div class="line">  &#123;<span class="attr">type</span>: MOVE_EXISTING, <span class="attr">fromIndex</span>: <span class="number">0</span>, <span class="attr">toIndex</span>: <span class="number">1</span>&#125;</div><div class="line">]</div></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>lastIndex</th>
+<th>nextIndex</th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始化</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.B</code></td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.A</code></td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+</tbody>
+</table>
+<p>3.遍历 <code>nextList.D</code>，发现 <code>prevList.D</code> 不存在，故直接将其插入到 <code>nextIndex</code> 的位置，<code>updateQueue</code> 变为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">updateQueue = [</div><div class="line">  &#123;<span class="attr">type</span>: MOVE_EXISTING, <span class="attr">fromIndex</span>: <span class="number">0</span>, <span class="attr">toIndex</span>: <span class="number">1</span>&#125;,</div><div class="line">  &#123;<span class="attr">type</span>: INSERT_MARKUP, <span class="attr">fromIndex</span>: <span class="literal">null</span>, <span class="attr">toIndex</span>: <span class="number">2</span>&#125;</div><div class="line">]</div></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>lastIndex</th>
+<th>nextIndex</th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始化</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.B</code></td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.A</code></td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.D</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>4.遍历 <code>prevList.A</code>，发现 <code>nextList.A</code> 存在，跳过。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>lastIndex</th>
+<th>nextIndex</th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始化</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.B</code></td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.A</code></td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.D</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>遍历 <code>prevList.A</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>5.遍历 <code>prevList.B</code>，发现 <code>nextList.B</code> 存在，跳过。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>lastIndex</th>
+<th>nextIndex</th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始化</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.B</code></td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.A</code></td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.D</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>遍历 <code>prevList.A</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>遍历 <code>prevList.B</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>6.遍历 <code>prevList.C</code>，发现 <code>nextList.C</code> 不存在，故需要删除该节点，<code>updateQueue</code> 变为：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">updateQueue = [</div><div class="line">  &#123;<span class="attr">type</span>: MOVE_EXISTING, <span class="attr">fromIndex</span>: <span class="number">0</span>, <span class="attr">toIndex</span>: <span class="number">1</span>&#125;,</div><div class="line">  &#123;<span class="attr">type</span>: INSERT_MARKUP, <span class="attr">fromIndex</span>: <span class="literal">null</span>, <span class="attr">toIndex</span>: <span class="number">2</span>&#125;,</div><div class="line">  &#123;<span class="attr">type</span>: REMOVE_NODE, <span class="attr">fromIndex</span>: <span class="number">2</span>, <span class="attr">toIndex</span>: <span class="literal">null</span>&#125;</div><div class="line">]</div></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>lastIndex</th>
+<th>nextIndex</th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+<th>D</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初始化</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.B</code></td>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.A</code></td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>null</td>
+</tr>
+<tr>
+<td>遍历 <code>nextList.D</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>遍历 <code>prevList.A</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>遍历 <code>prevList.B</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>遍历 <code>prevList.C</code></td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+<td>0</td>
+<td>null</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>至此，就可以算出 <code>list diff</code> 后节点列表的更新步骤。</p>
+<h3 id="4-为什么不将变化直接更新到真实-DOM-节点上？"><a href="#4-为什么不将变化直接更新到真实-DOM-节点上？" class="headerlink" title="4. 为什么不将变化直接更新到真实 DOM 节点上？"></a>4. 为什么不将变化<strong>直接</strong>更新到真实 <code>DOM</code> 节点上？</h3><p>通过 <code>reconciliation</code> 将节点变化部分更新到真实节点的意义在于：</p>
+<ul>
+<li>通过 <code>diff</code> 算法对比 <code>render</code> 前后的 <code>Virtual DOM</code> 可以获取需要改变的 <code>Virtual DOM</code> <strong>最小集合</strong>以及将这些变化部分更新到真实节点的<strong>最少步骤</strong>。</li>
+<li>在更新真实节点的过程中，<code>React</code> 会根据 <code>diff</code> 获取到的更新步骤，在一次<strong>事件循环</strong>中执行完<strong>所有步骤</strong>并保证在此次<strong>事件循环</strong>中<strong>只执行一次</strong>真实节点的<strong>重绘</strong>和<strong>重排</strong>操作。</li>
+</ul>
+<p>以上两点可以确保 <code>React</code> 在更新真实 <code>DOM</code> 过程中，避免无用重复的<strong>重排</strong>和<strong>重绘</strong>操作，从而降低更新操作带来的性能影响。</p>
+<p>参考文献：</p>
+<p><a href="https://hackernoon.com/virtual-dom-in-reactjs-43a3fdb1d130" target="_blank" rel="external">virtual-dom</a></p>
+<p><a href="https://medium.com/@ryanbas21/react-reconciliation-7075e3f07437" target="_blank" rel="external">react-reconciliation</a></p>
+<p><a href="https://zhuanlan.zhihu.com/p/20346379" target="_blank" rel="external">不可思议的 react diff</a></p>
+<p><a href="https://medium.com/@gethylgeorge/how-virtual-dom-and-diffing-works-in-react-6fc805f9f84e" target="_blank" rel="external">how-virtual-dom-and-diffing-works-in-react</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+     
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav" class="article-nav">
+  
+    <span id="article-nav-newer" class="article-nav-link-wrap newer"></span>
+  
+  
+    <a href="/2019/01/22/React 组件通信方式/" id="article-nav-older" class="article-nav-link-wrap older">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">React 组件通信方式</div>
+    </a>
+  
+</nav>
+
+
+  
+</article>
+
+
+
+
+
+
+      </div>
+      
+    <footer id="footer" class="post-footer footer">
+      
+        <ul class="footer-links">
+          
+            <li><a href="/archives/"><span class="fa fa-book"></span></a></li>
+          
+            <li><a href="https://github.com"><span class="fa fa-globe"></span></a></li>
+          
+            <li><a href="https://twitter.com/"><span class="fa fa-twitter"></span></a></li>
+          
+            <li><a href="https://github.com/"><span class="fa fa-github-alt"></span></a></li>
+          
+            <li><a href="https://www.youtube.com/"><span class="fa fa-youtube-play"></span></a></li>
+          
+            <li><a href="https://stackoverflow.com/"><span class="fa fa-stack-overflow"></span></a></li>
+          
+            <li><a href="https://plus.google.com/"><span class="fa fa-google-plus"></span></a></li>
+          
+            <li><a href="/atom.xml"><span class="fa fa-rss"></span></a></li>
+          
+        </ul>
+	    
+      <hr/>
+      <div id="footerContent" class="footer-content">
+        <p>You only get one shot, do not miss your chance to blow!</p>
+
+
+      </div>
+    </footer>
+
+      
+
+
+
+<script src="//cdn.bootcss.com/jquery/2.2.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.10/clipboard.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/typing.js"></script>
+<!--[if lt IE 9]><script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script><![endif]-->
+
+
+
+
+
+
+
+    </div>
+  </body>
+</html>
